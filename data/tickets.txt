@@ -1,0 +1,30 @@
+Portland, Nashville, 17
+Montreal, New Orleans, 13
+San Francisco, Atlanta, 17
+Helena, Los Angeles, 8
+Los Angeles, New York, 21
+Vancouver, Santa Fe, 13
+New York, Atlanta, 6
+Sault St. Marie, Nashville, 8
+Dallas, New York, 11
+Sault St. Marie, Oklahoma City, 9
+Duluth, Houston, 8
+Montreal, Atlanta, 9
+Seattle, New York, 22
+Portland, Phoenix, 11
+Calgary, Phoenix, 13
+Toronto, Miami, 10
+Duluth, El Paso, 10
+Winnipeg, Houston, 12
+Winnipeg, Little Rock, 11
+Chicago, New Orleans, 7
+Boston, Miami, 12
+Kansas City, Houston, 5
+Vancouver, Montreal, 20
+Chicago, Santa Fe, 9
+Los Angeles, Miami, 20
+Calgary, Salt Lake City, 7
+Los Angeles, Chicago, 16
+Denver, Pittsburgh, 11
+Seattle, Los Angeles, 9
+Denver, El Paso, 4
