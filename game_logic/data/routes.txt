@@ -9,7 +9,7 @@ Portland, Salt Lake City, 6, blue
 Portland, San Francisco, 5, pink
 Portland, San Francisco, 5, green
 San Francisco, Salt Lake City, 5, white
-San Francisco, Salt Lake City, 5, orange 
+San Francisco, Salt Lake City, 5, orange
 San Francisco, Los Angeles, 3, pink
 San Francisco, Los Angeles, 3, yellow
 Los Angeles, Las Vegas, 2, grey
