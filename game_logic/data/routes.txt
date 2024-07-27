@@ -1,17 +1,12 @@
 Vancouver, Calgary, 3, grey
-Vancouver, Seattle, 1, grey
-Vancouver, Seattle, 1, grey
-Seattle, Portland, 1, grey
-Seattle, Portland, 1, grey
+Vancouver, Seattle, 1, grey, grey
+Seattle, Portland, 1, grey, grey
 Seattle, Calgary, 4, grey
 Seattle, Helena, 6, yellow
 Portland, Salt Lake City, 6, blue
-Portland, San Francisco, 5, pink
-Portland, San Francisco, 5, green
-San Francisco, Salt Lake City, 5, white
-San Francisco, Salt Lake City, 5, orange
-San Francisco, Los Angeles, 3, pink
-San Francisco, Los Angeles, 3, yellow
+Portland, San Francisco, 5, pink, green
+San Francisco, Salt Lake City, 5, white, orange
+San Francisco, Los Angeles, 3, pink, yellow
 Los Angeles, Las Vegas, 2, grey
 Los Angeles, Phoenix, 3, grey
 Los Angeles, El Paso, 6, black
@@ -26,8 +21,7 @@ Santa Fe, Denver, 2, grey
 Santa Fe, Oklahoma City, 3, blue
 Las Vegas, Salt Lake City, 3, orange
 Salt Lake City, Helena, 3, pink
-Salt Lake City, Denver, 3, yellow
-Salt Lake City, Denver, 3, red
+Salt Lake City, Denver, 3, yellow, red
 Calgary, Helena, 4, grey
 Calgary, Winnipeg, 6, white
 Helena, Winnipeg, 4, blue
@@ -35,25 +29,18 @@ Helena, Duluth, 6, orange
 Helena, Omaha, 5, red
 Helena, Denver, 4, green
 Denver, Omaha, 4, pink
-Denver, Kansas City, 4, orange
-Denver, Kansas City, 4, black
+Denver, Kansas City, 4, orange, black
 Denver, Oklahoma City, 4, red
-Houston, Dallas, 1, grey
-Houston, Dallas, 1, grey
+Houston, Dallas, 1, grey, grey
 Houston, New Orleans, 2, grey
-Dallas, Oklahoma City, 2, grey
-Dallas, Oklahoma City, 2, grey
+Dallas, Oklahoma City, 2, grey, grey
 Dallas, Little Rock, 2, grey
 Oklahoma City, Little Rock, 2, grey
-Oklahoma City, Kansas City, 2, grey
-Oklahoma City, Kansas City, 2, grey
-Kansas City, Saint Louis, 2, pink
-Kansas City, Saint Louis, 2, blue
-Kansas City, Omaha, 1, grey
-Kansas City, Omaha, 1, grey
+Oklahoma City, Kansas City, 2, grey, grey
+Kansas City, Saint Louis, 2, pink, blue
+Kansas City, Omaha, 1, grey, grey
 Omaha, Chicago, 4, blue
-Omaha, Duluth, 2, grey
-Omaha, Duluth, 2, grey
+Omaha, Duluth, 2, grey, grey
 Duluth, Chicago, 3, red
 Duluth, Winnipeg, 4, black
 Duluth, Toronto, 6, pink
@@ -61,40 +48,31 @@ Duluth, Sault St. Marie, 3, grey
 Winnipeg, Sault St. Marie, 6, grey
 Sault St. Marie, Montreal, 5, black
 Sault St. Marie, Toronto, 2, grey
-Chicago, Pittsburgh, 3, orange
-Chicago, Pittsburgh, 3, black
-Chicago, Saint Louis, 2, white
-Chicago, Saint Louis, 2, green
+Chicago, Pittsburgh, 3, orange, black
+Chicago, Saint Louis, 2, white, green
 Saint Louis, Pittsburgh, 5, green
 Saint Louis, Little Rock, 2, grey
 Saint Louis, Nashville, 2, grey
 Little Rock, Nashville, 3, white
 Little Rock, New Orleans, 3, green
-New Orleans, Atlanta, 4, yellow
-New Orleans, Atlanta, 4, orange
+New Orleans, Atlanta, 4, yellow, orange
 New Orleans, Miami, 6, red
 Miami, Atlanta, 5, blue
 Miami, Charleston, 4, pink
 Nashville, Raleigh, 3, black
 Nashville, Atlanta, 1, grey
 Nashville, Pittsburgh, 4, yellow
-Atlanta, Raleigh, 2, grey
-Atlanta, Raleigh, 2, grey
+Atlanta, Raleigh, 2, grey, grey
 Atlanta, Charleston, 2, grey
 Raleigh, Charleston, 2, grey
-Raleigh, Washington, 2, grey
-Raleigh, Washington, 2, grey
+Raleigh, Washington, 2, grey, grey
 Pittsburgh, Raleigh, 2, grey
-Pittsburgh, New York, 2, white
-Pittsburgh, New York, 2, green
+Pittsburgh, New York, 2, white, green
 Pittsburgh, Washington, 2, grey
-Washington, New York, 2, orange
-Washington, New York, 2, black
+Washington, New York, 2, orange, black
 Toronto, Pittsburgh, 2, grey
 Toronto, Montreal, 3, grey
 Toronto, Chicago, 4, white
-Montreal, Boston, 2, grey
-Montreal, Boston, 2, grey
+Montreal, Boston, 2, grey, grey
 Montreal, New York, 3, blue
-New York, Boston, 2, yellow
-New York, Boston, 2, red
+New York, Boston, 2, yellow, red
