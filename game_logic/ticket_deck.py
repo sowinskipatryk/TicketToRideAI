@@ -13,11 +13,13 @@ class TicketDeck:
         self._ticket_deck.append(ticket)
 
     def remove(self) -> tuple:
-        if not self.is_empty:
+        if not self.is_empty():
             return self._ticket_deck.popleft()
         else:
             logger.info('Ticket deck is empty!')
 
-    @property
+    def tickets_left(self) -> int:
+        return len(self._ticket_deck)
+
     def is_empty(self) -> bool:
-        return len(self._ticket_deck) == 0
+        return self.tickets_left() == 0
