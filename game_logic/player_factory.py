@@ -6,17 +6,17 @@ from game_logic.players.random_player import RandomPlayer
 
 
 class PlayerFactory:
-    def create_players(self, player_types):
-        return [self.create_player(index, player_type) for index, player_type in enumerate(player_types)]
+    def create_players(self, player_types, game_manager):
+        return [self.create_player(index, player_type, game_manager) for index, player_type in enumerate(player_types)]
 
     @staticmethod
-    def create_player(index, type_):
+    def create_player(index, type_, game_manager):
         player_type = PlayerType(type_)
         if player_type == PlayerType.HUMAN:
-            return HumanPlayer(index)
+            return HumanPlayer(index, game_manager)
         elif player_type == PlayerType.AI:
-            return AIPlayer(index)
+            return AIPlayer(index, game_manager)
         elif player_type == PlayerType.RANDOM:
-            return RandomPlayer(index)
+            return RandomPlayer(index, game_manager)
         else:
             raise Exception("Invalid player type. Choose from: Human, AI, Random")

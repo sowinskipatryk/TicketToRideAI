@@ -21,8 +21,8 @@ class Game:
         logger.info(self.game_state)
 
         self.player_factory = PlayerFactory()
-        self.players = self.player_factory.create_players(player_types)
         self.game_manager = GameManager(self.players_num)
+        self.players = self.player_factory.create_players(player_types, self.game_manager)
         self.current_player_id = random.randrange(0, self.players_num)
         self.total_moves = 0
         self.completed_moves = 0

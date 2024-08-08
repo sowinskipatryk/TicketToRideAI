@@ -6,13 +6,15 @@ from game_logic.enums.decisions.actions import ActionDecision
 from game_logic.enums.decisions.train_cards import TrainCardDecision
 from game_logic.enums.player_colors import PlayerColor
 from game_logic.game_logger import logger
+from game_logic.game_manager import GameManager
 from game_logic.boards.player_board import PlayerBoard
 
 
 class BasePlayer:
     PLAYER_COLORS = list(PlayerColor)
 
-    def __init__(self, color_index: int) -> None:
+    def __init__(self, color_index: int, game_manager: GameManager) -> None:
+        self.game_manager = game_manager
         self.color = self.PLAYER_COLORS[color_index]
         self.tickets = {}
         self.hand = collections.defaultdict(int)
@@ -107,8 +109,7 @@ class BasePlayer:
         if not tickets:
             return False
 
-        tickets_num = len(tickets)
-        kept, discarded = self.choose_tickets(min_keep, tickets_num)
+        kept, discarded = self.choose_tickets(min_keep, tickets)
 
         for index in range(len(tickets)):
             if index in kept:
@@ -132,8 +133,7 @@ class BasePlayer:
             if train_card_decision == TrainCardDecision.DRAW_PILE:
                 train_card = game_manager.deal_draw_pile_card()
             elif train_card_decision in list(TrainCardDecision):
-                card_id = self.decide_train_card()
-                train_card = game_manager.deal_face_up_card(card_id)
+                train_card = game_manager.deal_face_up_card(train_card_decision_id)
                 if train_card is None:
                     return False
                 elif train_card == 'wild':
@@ -212,7 +212,7 @@ class BasePlayer:
                 logger.info('TICKET_COMPLETED!')
                 self.complete_ticket(ticket)
 
-    def choose_tickets(self, min_keep: int, tickets_num: int) -> Tuple[List[int], List[int]]:
+    def choose_tickets(self, min_keep: int, tickets: List[tuple]) -> Tuple[List[int], List[int]]:
         raise NotImplementedError
 
     def decide_route(self) -> int:

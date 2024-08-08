@@ -8,7 +8,8 @@ from game_logic.enums.decisions.train_cards import TrainCardDecision
 
 
 class RandomPlayer(BasePlayer):
-    def choose_tickets(self, min_keep: int, tickets_num: int) -> Tuple[List[int], List[int]]:
+    def choose_tickets(self, min_keep: int, tickets: List[tuple]) -> Tuple[List[int], List[int]]:
+        tickets_num = len(tickets)
         ticket_ids = list(range(tickets_num))
         random.shuffle(ticket_ids)
         min_keep = min(min_keep, tickets_num)
