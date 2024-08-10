@@ -9,7 +9,7 @@ from game_logic.game_config import GameConfigAmerica
 class GameManager:
     def __init__(self, players_num):
         self.players_num = players_num
-        self.board = GameBoard()
+        self.board = GameBoard(self)
         self.ticket_deck = TicketDeck()
         self.train_card_manager = TrainCardManager()
 

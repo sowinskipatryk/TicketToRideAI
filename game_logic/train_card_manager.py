@@ -6,7 +6,7 @@ from game_logic.game_logger import logger
 
 
 class TrainCardManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self._draw_pile = self._create_draw_pile()
         self._discard_pile = []
         self._face_up_cards = []
@@ -48,6 +48,7 @@ class TrainCardManager:
         logger.debug('fill_face_up')
         logger.debug(f'before {self._face_up_cards}')
         self.get_state()
+        tries = 0
         while len(self._face_up_cards) < GameConfigAmerica.FACE_UP_CARDS_NUM:
             card = self.pick_draw_pile_card()
             if card is None:
@@ -57,10 +58,11 @@ class TrainCardManager:
                 # logger.debug(f'{card} picked from draw pile')
                 self._face_up_cards.append(card)
 
-            if self._face_up_cards.count('wild') >= GameConfigAmerica.MAX_WILD_CARDS and len(self._discard_pile) > 0:
+            if self._face_up_cards.count('wild') >= GameConfigAmerica.MAX_WILD_CARDS and tries < 5:
                 logger.debug('Too many wild cards on the table. Discarding face up cards...')
                 self.add_to_discard_pile(self._face_up_cards)
                 self._face_up_cards = []
+                tries += 1
         logger.debug(f'after {self._face_up_cards}')
         self.get_state()
 
@@ -82,5 +84,5 @@ class TrainCardManager:
         for card in cards:
             self._discard_pile.append(card)
 
-    def get_state(self):
+    def get_state(self) -> None:
         logger.debug(f'face_up: {len(self._face_up_cards)} draw: {len(self._draw_pile)} discard: {len(self._discard_pile)}')

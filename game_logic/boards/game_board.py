@@ -6,8 +6,9 @@ from game_logic.utils import load_routes, load_cities
 
 
 class GameBoard:
-    def __init__(self):
+    def __init__(self, game_manager):
         super().__init__()
+        self.game_manager = game_manager
         self.routes = load_routes()
         self.cities = load_cities()
         self.G = nx.MultiGraph()
@@ -46,7 +47,7 @@ class GameBoard:
 
         nx.draw_networkx_nodes(self.G, pos, node_size=700)
 
-        nx.draw_networkx_labels(self.G, pos)
+        nx.draw_networkx_labels(self.G, pos, font_size=11)
 
         ax = plt.gca()
         colors = []
@@ -63,7 +64,7 @@ class GameBoard:
                                               connectionstyle=f"arc3,rad={rad}")
                 edge_labels[(u, v, i)] = data['weight']
 
-        nx.draw_networkx_edge_labels(self.G, pos, edge_labels=edge_labels)
+        # nx.draw_networkx_edge_labels(self.G, pos, edge_labels=edge_labels)
 
         plt.axis("off")
         plt.ion()
@@ -84,12 +85,16 @@ class GameBoard:
 
         ax = plt.gca()
         edge_labels = {}
-        for (u, v, key, data) in self.G.edges(keys=True, data=True):
-            if not data['claimed_by'][key]:
-                rad = 0.1 * (key + 1)  # Adjust the curvature radius
-                edge = nx.draw_networkx_edges(self.G, pos, edgelist=[(u, v)], edge_color=data["edge_colors"][key], width=2, ax=ax,
-                                              connectionstyle=f"arc3,rad={rad}")
-                edge_labels[(u, v, key)] = f"#{data['route_id']} L{data['weight']}"
+        for (u, v, data) in self.G.edges(data=True):
+            for i in range(len(data['edge_colors'])):
+                rad = 0.1 * (i + 1)
+                if data['claimed_by'][i] or (self.game_manager.players_num < 4 and any(x is not None for x in data['claimed_by'])):
+                    edge = nx.draw_networkx_edges(self.G, pos, edgelist=[(u, v)], edge_color=next(x for x in data['claimed_by'] if x is not None).value, width=6, ax=ax,
+                                                  connectionstyle=f"arc3,rad={rad}")
+                else:
+                    edge = nx.draw_networkx_edges(self.G, pos, edgelist=[(u, v)], edge_color=data["edge_colors"][i], width=2, ax=ax,
+                                                  connectionstyle=f"arc3,rad={rad}")
+                    edge_labels[(u, v, i)] = f"#{data['route_id']} L{data['weight']}"
 
         edge_label_objects = nx.draw_networkx_edge_labels(self.G, pos, edge_labels=edge_labels)
 

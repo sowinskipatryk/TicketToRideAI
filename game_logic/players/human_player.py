@@ -86,6 +86,11 @@ class HumanPlayer(BasePlayer):
         for k, v in self.hand.items():
             print(f'{k}: {v}')
 
+    def print_tickets(self):
+        print(f'{self} tickets')
+        for k, v in self.tickets.items():
+            print(f"{k[0]} -> {k[1]} ({k[2]}) : {'finished' if v else 'not finished'}")
+
     @staticmethod
     def graph_time_decision(function):
         while True:
@@ -102,6 +107,7 @@ class HumanPlayer(BasePlayer):
         print("[p] Show possession graph")
         print("[m] Show moves graph")
         print("[h] Show player's hand")
+        print("[t] Show player's tickets")
 
     def check_state_instructions(self, choice):
         if choice == 'p':
@@ -112,4 +118,7 @@ class HumanPlayer(BasePlayer):
             return True
         elif choice == 'h':
             self.print_hand()
+            return True
+        elif choice == 't':
+            self.print_tickets()
             return True

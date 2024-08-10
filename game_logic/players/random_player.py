@@ -14,7 +14,10 @@ class RandomPlayer(BasePlayer):
         random.shuffle(ticket_ids)
         min_keep = min(min_keep, tickets_num)
         keep_num = random.randint(min_keep, tickets_num)
-        return ticket_ids[:keep_num], ticket_ids[keep_num:]
+        keep_ids = ticket_ids[:keep_num]
+        discard_ids = ticket_ids[keep_num:]
+
+        return keep_ids, discard_ids
 
     def decide_action(self) -> int:
         return random.randrange(0, len(list(ActionDecision)))
@@ -29,4 +32,4 @@ class RandomPlayer(BasePlayer):
         return random.randrange(0, len(list(TrainCardDecision)))
 
     def decide_route(self) -> int:
-        return random.randint(0, 77)  # TO DO: replace the hard coded value with len(routes)
+        return random.randrange(0, self.game_manager.board.get_routes_num())
