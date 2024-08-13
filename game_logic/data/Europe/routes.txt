@@ -1,0 +1,91 @@
+Edinburgh, London, 4, orange, black
+London, Amsterdam, 2, grey
+Amsterdam, Essen, 3, yellow
+Amsterdam, Bruxelles, 1, black
+Bruxelles, Frankfurt, 2, blue
+Amsterdam, Frankfurt, 2, white
+Essen, Berlin, 2, blue
+Frankfurt, Berlin, 3, black, red
+Berlin, Danzig, 4, grey
+Dieppe, Paris, 1, purple
+Sochi, Erzurum, 3, red
+Sevastopol, Erzurum, 4, grey
+Dieppe, Bruxelles, 2, green
+Budapest, Bucuresti, 4, grey
+Bucuresti, Sevastopol, 4, white
+Bucuresti, Constantinople, 3, yellow
+Rostov, Sevastopol, 4, grey
+Bruxelles, Paris, 2, yellow, red
+Paris, Marseille, 4, grey
+Zurich, Marseille, 2, purple
+Brindisi, Palermo, 3, grey
+Palermo, Smyrna, 6, grey
+Smyrna, Angora, 3, orange
+Constantinople, Angora, 2, grey
+Angora, Erzurum, 3, black
+Barcelona, Marseille, 4, grey
+Marseille, Roma, 4, grey
+Danzig, Riga, 3, black
+Riga, Petrograd, 4, grey
+Stockholm, Petrograd, 8, grey
+Moskva, Petrograd, 4, white
+Warszawa, Wilno, 3, red
+Danzig, Warszawa, 2, grey
+Kyiv, Bucuresti, 4, grey
+Budapest, Sarajevo, 3, purple
+Zürich, Venezia, 2, green
+Roma, Brindisi, 2, white
+Athina, Smyrna, 2, grey
+London, Dieppe, 2, grey, grey
+Dieppe, Brest, 2, orange
+Brest, Paris, 3, black
+Paris, Dieppe, 1, purple, purple
+Paris, Frankfurt, 3, white, orange
+Frankfurt, München, 2, purple
+München, Venezia, 2, blue
+Budapest, Kyiv, 6, grey
+Warszawa, Kyiv, 4, grey
+Kharkov, Moskva, 4, grey
+Wilno, Kyiv, 2, grey
+Riga, Wilno, 4, green
+Sofia, Athina, 3, purple
+Wien, Warszawa, 4, blue
+Pamplona, Marseille, 4, red
+Smyrna, Constantinople, 2, grey
+Wilno, Smolensk, 3, yellow
+Wilno, Petrograd, 4, blue
+Bucuresti, Sofia, 2, grey
+Wien, Budapest, 1, red, white
+Warszawa, Berlin, 4, purple, yellow
+Berlin, Wien, 3, green
+Wien, Zagreb, 2, grey
+Munchen, Wien, 3, orange
+Zagreb, Budapest, 2, orange
+Venezia, Zagreb, 2, grey
+Zagreb, Sarajevo, 3, red
+Sarajevo, Sofia, 2, grey
+Sarajevo, Athina, 4, green
+Sofia, Constantinople, 3, blue
+Constantinople, Sevastopol, 4, grey
+Sevastopol, Sochi, 2, grey
+Sochi, Rostov, 2, grey
+Rostov, Kharkov, 2, green
+Kharkov, Kyiv, 4, grey
+Kyiv, Smolensk, 3, red
+Smolensk, Moskva, 2, orange
+Stockholm, København, 3, yellow, white
+København, Essen, 3, grey, grey
+Essen, Frankfurt, 2, green
+Paris, Zürich, 3, grey
+Zürich, München, 2, yellow
+Venezia, Roma, 2, black
+Roma, Palermo, 4, grey
+Brindisi, Athina, 4, grey
+Paris, Pamplona, 4, blue, green
+Pamplona, Madrid, 3, black, white
+Madrid, Lisboa, 3, purple
+Lisboa, Cadiz, 2, blue
+Madrid, Barcelona, 2, yellow
+Madrid, Cadiz, 3, orange
+Pamplona, Barcelona, 2, grey
+Pamplona, Brest, 4, purple
