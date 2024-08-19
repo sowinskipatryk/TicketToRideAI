@@ -1,10 +1,9 @@
 import random
 from typing import Tuple, List
 
-from game_logic.players.base_player import BasePlayer
-from game_logic.game_config import GameConfigAmerica
 from game_logic.enums.decisions.actions import ActionDecision
 from game_logic.enums.decisions.train_cards import TrainCardDecision
+from game_logic.players.base_player import BasePlayer
 
 
 class RandomPlayer(BasePlayer):
@@ -16,20 +15,19 @@ class RandomPlayer(BasePlayer):
         keep_num = random.randint(min_keep, tickets_num)
         keep_ids = ticket_ids[:keep_num]
         discard_ids = ticket_ids[keep_num:]
-
         return keep_ids, discard_ids
 
     def decide_action(self) -> int:
         return random.randrange(0, len(list(ActionDecision)))
 
     def decide_wild_cards(self) -> int:
-        return random.randint(0, GameConfigAmerica.WILD_CARDS_NUM)
+        return random.randint(0, self.game_instance.config.WILD_CARDS_NUM)
 
     def decide_cards_color(self) -> int:
-        return random.randrange(0, len(GameConfigAmerica.TRAIN_COLORS))
+        return random.randrange(0, len(self.game_instance.config.TRAIN_COLORS))
 
     def decide_train_card(self) -> int:
         return random.randrange(0, len(list(TrainCardDecision)))
 
     def decide_route(self) -> int:
-        return random.randrange(0, self.game_manager.board.get_routes_num())
+        return random.randrange(0, self.game_instance.board.get_links_num())
