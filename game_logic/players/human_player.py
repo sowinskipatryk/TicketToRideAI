@@ -1,5 +1,4 @@
 from game_logic.players.base_player import BasePlayer
-from game_logic.game_config import GameConfigAmerica
 
 
 class HumanPlayer(BasePlayer):
@@ -38,7 +37,7 @@ class HumanPlayer(BasePlayer):
     def decide_wild_cards(self) -> int:
         while True:
             wild_cards = input(f"How many wild cards do you wish to use: ")
-            if wild_cards.isdigit() and 0 <= int(wild_cards) <= GameConfigAmerica.WILD_CARDS_NUM:
+            if wild_cards.isdigit() and 0 <= int(wild_cards) <= self.game_instance.config.WILD_CARDS_NUM:
                 return int(wild_cards)
             else:
                 print("Invalid choice. Please enter the number of wild cards that you wish to use to claim the route.")
@@ -47,13 +46,13 @@ class HumanPlayer(BasePlayer):
         while True:
             print(self.hand)
             train_color = input("Which train color do you wish to use to claim a route: ")
-            if train_color in GameConfigAmerica.TRAIN_COLORS:
-                return GameConfigAmerica.TRAIN_COLORS.index(train_color)
+            if train_color in self.game_instance.config.TRAIN_COLORS:
+                return self.game_instance.config.TRAIN_COLORS.index(train_color)
             else:
-                print(f"Invalid choice. Please enter one of these train colors: {GameConfigAmerica.TRAIN_COLORS}")
+                print(f"Invalid choice. Please enter one of these train colors: {self.game_instance.config.TRAIN_COLORS}")
 
     def decide_train_card(self):
-        face_up_cards = self.game_manager.train_card_manager.get_face_up_cards()
+        face_up_cards = self.game_instance.train_card_manager.get_face_up_cards()
         while True:
             print("Choose an action:")
             for i, card in enumerate(face_up_cards):
@@ -79,7 +78,7 @@ class HumanPlayer(BasePlayer):
             elif route_decision.isdigit() and int(route_decision) in range(77):
                 return int(route_decision)
             else:
-                print(f"Invalid choice. Please enter route id from 0 to {self.game_manager.board.get_routes_num()}")
+                print(f"Invalid choice. Please enter route id from 0 to {self.game_instance.board.get_links_num()}")
 
     def print_hand(self):
         print(f'{self} hand')
@@ -111,10 +110,10 @@ class HumanPlayer(BasePlayer):
 
     def check_state_instructions(self, choice):
         if choice == 'p':
-            self.graph_time_decision(self.game_manager.board.draw_possession_graph)
+            self.graph_time_decision(self.game_instance.board.draw_possession_graph)
             return True
         elif choice == 'm':
-            self.graph_time_decision(self.game_manager.board.draw_available_moves_graph)
+            self.graph_time_decision(self.game_instance.board.draw_available_moves_graph)
             return True
         elif choice == 'h':
             self.print_hand()

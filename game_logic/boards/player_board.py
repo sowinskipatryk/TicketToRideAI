@@ -1,11 +1,11 @@
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
+
 from typing import Tuple
 
 
 class PlayerBoard:
     def __init__(self, player):
-        super().__init__()
         self.player = player
         self.G = nx.Graph()
 
@@ -58,7 +58,7 @@ class PlayerBoard:
 
         return longest
 
-    def draw_graph(self, pause_time=30):
+    def draw_graph(self, pause_time: int = 30) -> None:
         plt.figure(figsize=(12, 6))
 
         pos = nx.spring_layout(self.G)
