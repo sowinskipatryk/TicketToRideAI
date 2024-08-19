@@ -1,8 +1,11 @@
 from game_logic.game import Game
 
 if __name__ == "__main__":
-    # Provide a list of players using words 'Human', 'AI', or 'Random'
+    # Provide a list of 2-5 players. Choices: Human, AI, Random
     players = ['Random', 'Random']
-    
-    game = Game(players)
+
+    # Choose version of the game. Choices: USA, Europe, Nordic
+    version = 'USA'
+
+    game = Game(players, version)
     game.play()

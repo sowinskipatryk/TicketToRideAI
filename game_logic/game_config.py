@@ -15,7 +15,7 @@ class BaseGameConfig:
     ROUTE_VALUES = {1: 1, 2: 2, 3: 4, 4: 7, 5: 10, 6: 15, 8: 21, 9: 27}  # {length: value}
 
 
-class GameConfigAmerica(BaseGameConfig):
+class GameConfigUSA(BaseGameConfig):
     WILD_CARD_RESTRICTION = True
     LONGEST_ROUTE_BONUS = 10
 
