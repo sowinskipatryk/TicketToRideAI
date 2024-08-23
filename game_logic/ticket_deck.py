@@ -18,8 +18,6 @@ class TicketDeck:
         self.tickets_num = len(self._ticket_deck)
         random.shuffle(self._ticket_deck)
 
-        self.set_ticket_pile_num_adapter()
-
     def get_tickets_num(self):
         return self.tickets_num
 

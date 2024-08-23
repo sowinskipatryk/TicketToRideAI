@@ -78,7 +78,7 @@ class HumanPlayer(BasePlayer):
             elif route_decision.isdigit() and int(route_decision) in range(77):
                 return int(route_decision)
             else:
-                print(f"Invalid choice. Please enter route id from 0 to {self.game_instance.board.get_links_num()}")
+                print(f"Invalid choice. Please enter route id from 0 to {self.game_instance.board.get_route_links_num()}")
 
     def print_hand(self):
         print(f'{self} hand')

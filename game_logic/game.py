@@ -1,5 +1,6 @@
 import random
 from typing import List
+from neat.nn.feed_forward import FeedForwardNetwork
 
 from game_logic.game_logger import logger
 from game_logic.enums.game_states import GameState
@@ -15,7 +16,7 @@ class Game:
     MIN_PLAYERS = 2
     MAX_PLAYERS = 5
 
-    def __init__(self, player_types: List[str], version: str) -> None:
+    def __init__(self, player_types: List[str], version: str, networks: List[FeedForwardNetwork] = None) -> None:
         self.players_num = len(player_types)
 
         self.config_factory = ConfigFactory()
@@ -28,8 +29,13 @@ class Game:
         self.game_state = GameState.INIT
         logger.info(self.game_state)
 
+        self.board = GameBoard(self)
+        self.ticket_deck = TicketDeck(self)
+
         self.player_factory = PlayerFactory()
-        self.players, self.adapter = self.player_factory.create_players(player_types, self)
+        self.players, self.adapter = self.player_factory.create_players(player_types, self, networks)
+
+        self.train_card_manager = TrainCardManager(self)
 
         self.current_player_id = random.randrange(0, self.players_num)
         self.total_moves = 0
@@ -37,10 +43,6 @@ class Game:
 
         self.last_player = None
         self.winner = None
-
-        self.board = GameBoard(self)
-        self.ticket_deck = TicketDeck(self)
-        self.train_card_manager = TrainCardManager(self)
 
     def move_to_next_player(self) -> None:
         self.current_player_id = (self.current_player_id + 1) % self.players_num
@@ -51,7 +53,8 @@ class Game:
     def last_round_condition(self, player: BasePlayer) -> bool:
         return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES_NUM
 
-    def play(self) -> None:
+    def play(self, max_moves: int = 0) -> List[int]:
+        self.ticket_deck.set_ticket_pile_num_adapter()
         self.game_state = GameState.RUNNING
         logger.info(self.game_state)
 
@@ -61,11 +64,15 @@ class Game:
                                 min_keep=self.config.INITIAL_TICKETS_TO_KEEP_NUM)
 
         while self.game_state != GameState.LAST_ROUND:
+            if max_moves and self.total_moves > max_moves:
+                break
             self.total_moves += 1
             current_player = self.players[self.current_player_id]
             move_completed = current_player.play_turn()
             if move_completed:
                 self.completed_moves += 1
+            else:
+                self.player_stats[current_player.player_id]['invalid_actions'] += 1
             self.log_game_state()
             if self.last_round_condition(current_player):
                 self.last_player = current_player
@@ -73,11 +80,15 @@ class Game:
             self.move_to_next_player()
 
         while self.game_state != GameState.FINISHED:
+            if max_moves and self.total_moves > max_moves:
+                break
             self.total_moves += 1
             current_player = self.players[self.current_player_id]
             move_completed = current_player.play_turn()
             if move_completed:
                 self.completed_moves += 1
+            else:
+                self.player_stats[current_player.player_id]['invalid_actions'] += 1
             self.log_game_state()
             if current_player is self.last_player:
                 self.game_state = GameState.FINISHED
@@ -93,7 +104,8 @@ class Game:
         logger.info(f'total moves: {self.total_moves}')
 
         self.game_summary()
-        print(self.total_moves)
+
+        return [player.score for player in self.players]
 
     def score_player_tickets(self) -> None:
         for player in self.players:

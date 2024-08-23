@@ -1,5 +1,7 @@
 from typing import List, Tuple, TYPE_CHECKING
 
+from neat.nn.feed_forward import FeedForwardNetwork
+
 from game_logic.enums.player_types import PlayerType
 from game_logic.players.base_player import BasePlayer
 from game_logic.players.ai_player import AIPlayer
@@ -15,9 +17,13 @@ if TYPE_CHECKING:
 
 
 class PlayerFactory:
-    def create_players(self, player_types: List[str], game_instance: 'Game') -> Tuple[List[BasePlayer], BaseAdapter]:
+    def create_players(self, player_types: List[str], game_instance: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BaseAdapter]:
         adapter = self.determine_adapter(player_types, game_instance)
-        players = [self.create_player(index, player_type, game_instance, adapter) for index, player_type in enumerate(player_types)]
+        players = []
+        for index, player_type in enumerate(player_types):
+            network = networks[index] if networks else None
+            player = self.create_player(index, player_type, game_instance, adapter, network)
+            players.append(player)
         return players, adapter
 
     @staticmethod
@@ -28,7 +34,7 @@ class PlayerFactory:
             return BaseAdapter()
 
     @staticmethod
-    def create_player(index: int, type_: str, game_instance, adapter: BaseAdapter) -> BasePlayer:
+    def create_player(index: int, type_: str, game_instance, adapter: BaseAdapter, network: FeedForwardNetwork) -> BasePlayer:
         try:
             player_type = PlayerType(type_)
         except ValueError:
@@ -43,7 +49,8 @@ class PlayerFactory:
         player_class = player_types.get(player_type)
 
         if player_type == PlayerType.AI:
-            network = load_network()
+            if network is None:
+                network = load_network()
             return player_class(index, game_instance, adapter, network)
 
         return player_class(index, game_instance, adapter)

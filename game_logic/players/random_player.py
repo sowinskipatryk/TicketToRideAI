@@ -30,4 +30,4 @@ class RandomPlayer(BasePlayer):
         return random.randrange(0, len(list(TrainCardDecision)))
 
     def decide_route(self) -> int:
-        return random.randrange(0, self.game_instance.board.get_links_num())
+        return random.randrange(0, self.game_instance.board.get_route_links_num())

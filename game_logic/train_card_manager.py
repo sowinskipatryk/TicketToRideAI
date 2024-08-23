@@ -44,7 +44,8 @@ class TrainCardManager:
             if card is None:
                 return
             self._face_up_cards[card_id] = None
-            self.set_face_up_card_adapter(card_id, card)
+            self.set_face_up_card_adapter(card_id, None)
+
             self.fill_face_up()
             return card
 
@@ -117,6 +118,8 @@ class TrainCardManager:
     def set_face_up_card_adapter(self, card_id, card):
         if card == self.WILD_CARD:
             color_id = len(self.game_instance.config.TRAIN_COLORS)
+        elif card is None:
+            color_id = len(self.game_instance.config.TRAIN_COLORS) + 1
         else:
             color_id = self.game_instance.config.TRAIN_COLORS.index(card)
         self.game_instance.adapter.set_face_up_card(card_id, color_id)

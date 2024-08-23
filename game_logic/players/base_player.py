@@ -47,13 +47,15 @@ class BasePlayer:
                                                self.game_instance.config.TICKETS_TO_KEEP_NUM)
         elif action == ActionDecision.DRAW_CARDS:
             move_completed = self.draw_train_cards(self.game_instance.config.TRAIN_CARDS_DEALT_NUM)
+        elif action == ActionDecision.SKIP:
+            move_completed = True
         else:
             raise Exception("Invalid action")
-        logger.info(f'move_completed: {move_completed}')
+        if move_completed:
+            logger.warning(f'move_completed')
         return move_completed
 
     def add_ticket(self, ticket: tuple) -> None:
-        logger.info(f'{self} picks ticket {ticket}')
         self.tickets[ticket] = False
         self.adapter.set_ticket_owner(self.player_id, ticket)
 
@@ -76,7 +78,7 @@ class BasePlayer:
         return ticket[2]
 
     def add_cards_to_hand(self, cards: str | List[str]) -> None:
-        logger.info(f'add_cards_to_hand: {cards}')
+        logger.debug(f'add_cards_to_hand: {cards}')
         if not cards:
             return
         if not isinstance(cards, list):
@@ -126,14 +128,15 @@ class BasePlayer:
         tickets = self.game_instance.deal_tickets(num_tickets)
 
         if not tickets:
+            logger.debug('no tickets')
             return False
 
         kept, discarded = self.choose_tickets(min_keep, tickets)
 
         for index in range(len(tickets)):
             if index in kept:
+                logger.info(f'{self} picks ticket {tickets[index]}')
                 self.add_ticket(tickets[index])
-                self.adapter.set_ticket_owner(self.player_id, tickets[index])
             else:
                 logger.info(f'{self} discards ticket {tickets[index]}')
                 self.game_instance.ticket_deck.insert(tickets[index])
@@ -158,6 +161,7 @@ class BasePlayer:
             elif train_card_decision in list(TrainCardDecision):
                 train_card = self.game_instance.deal_face_up_card(train_card_decision_id)
                 if train_card is None:
+                    logger.info('no card in this position')
                     return False
                 elif train_card == 'wild':
                     if self.game_instance.config.WILD_CARD_RESTRICTION:
@@ -178,29 +182,17 @@ class BasePlayer:
         return True
 
     def claim_route(self) -> bool:
-        route_id = self.decide_route()
-        city1, city2, route_data = self.game_instance.board.get_route_data(route_id)
+        route_link_id = self.decide_route()
+        city1, city2, route_data = self.game_instance.board.get_route_data(route_link_id)
         logger.info(f'chosen route: {city1, city2, route_data}')
 
-        if self.color in route_data['claimed_by']:
-            logger.info('you already claimed one path for that route!')
+        if not self.game_instance.board.validate_route(self.color, route_data):
             return False
 
-        if all(route_data['claimed_by']):
-            logger.info('all paths for that route are claimed!')
-            return False
-
-        if any(route_data['claimed_by']) and self.game_instance.config.WILD_CARD_RESTRICTION and self.game_instance.players_num < 4:
-            logger.info('one path for that route is already claimed! second path is restricted in this game configuration!')
-            return False
-
-        cards_color_id = self.decide_cards_color()
-        cards_color = self.game_instance.config.TRAIN_COLORS[cards_color_id]
-
-        logger.info(f'chosen card color: {cards_color} ({self.hand[cards_color]})')
-        if cards_color not in route_data['edge_colors'] and 'grey' not in route_data['edge_colors']:
-            logger.info(f"Color mismatch! Route has {', '.join(route_data['edge_colors'])} paths and chosen color is {cards_color}.")
-            return False
+        cards_color = route_data['edge_color']
+        if cards_color == 'grey':
+            cards_color_id = self.decide_cards_color()
+            cards_color = self.game_instance.config.TRAIN_COLORS[cards_color_id]
 
         route_dist = route_data['weight']
         if route_dist > self.trains_remaining:
@@ -216,7 +208,7 @@ class BasePlayer:
         if self.hand[cards_color] + wild_cards_used_num < route_dist:
             return False
 
-        self.game_instance.board.claim_route(route_id, cards_color, self.color)
+        self.game_instance.board.claim_route(route_link_id, self.color)
         self.remove_cards_from_hand(cards_color, color_cards_used_num)
         self.remove_cards_from_hand('wild', wild_cards_used_num)
         logger.debug(f'color_cards_used {color_cards_used_num}')
@@ -229,7 +221,7 @@ class BasePlayer:
         self.check_completed_tickets()
 
         self.adapter.set_trains_num(self.player_id, self.trains_remaining)
-        self.adapter.set_route_owner(self.player_id, route_id)
+        self.adapter.set_route_owner(self.player_id, route_link_id)
 
         return True
 
