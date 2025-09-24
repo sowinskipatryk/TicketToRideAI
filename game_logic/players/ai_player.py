@@ -1,0 +1,64 @@
+import math
+
+from game_logic.game_logger import logger
+from game_logic.players.base_player import BasePlayer
+from network.decisions import NetworkDecisions
+
+
+class AIPlayer(BasePlayer):
+    def decide_route(self):
+        decisions_array = self.get_decisions_array()
+        logger.debug(f'route values: {decisions_array[NetworkDecisions.ROUTE_DECISION_ID:NetworkDecisions.COLOR_DECISION_ID]}')
+        route_values = decisions_array[NetworkDecisions.ROUTE_DECISION_ID:NetworkDecisions.COLOR_DECISION_ID]
+        return self.get_max_value_index(route_values)
+
+    def decide_cards_color(self):
+        decisions_array = self.get_decisions_array()
+        color_values = decisions_array[NetworkDecisions.COLOR_DECISION_ID:NetworkDecisions.TRAIN_CARD_DECISION_ID]
+        return self.get_max_value_index(color_values)
+
+    def decide_train_card(self):
+        decisions_array = self.get_decisions_array()
+        card_values = decisions_array[NetworkDecisions.TRAIN_CARD_DECISION_ID:NetworkDecisions.TICKET_DECISION_ID]
+        logger.debug(f'card decision values: {decisions_array[NetworkDecisions.TRAIN_CARD_DECISION_ID:NetworkDecisions.TICKET_DECISION_ID]}')
+        return self.get_max_value_index(card_values)
+
+    def decide_ticket(self):
+        decisions_array = self.get_decisions_array()
+        ticket_value = decisions_array[NetworkDecisions.TICKET_DECISION_ID]
+        logger.debug(f'ticket decision value: {decisions_array[NetworkDecisions.TICKET_DECISION_ID]}')
+        return self.is_active(ticket_value)
+
+    def decide_action(self):
+        decisions_array = self.get_decisions_array()
+        action_values = decisions_array[NetworkDecisions.ACTION_DECISION_ID:NetworkDecisions.LOCOMOTIVE_DECISION_ID]
+        logger.debug(f'action decision values: {decisions_array[NetworkDecisions.ACTION_DECISION_ID:NetworkDecisions.LOCOMOTIVE_DECISION_ID]}')
+        return self.get_max_value_index(action_values)
+
+    def decide_wild_cards(self):
+        decisions_array = self.get_decisions_array()
+        locomotive_value = decisions_array[NetworkDecisions.LOCOMOTIVE_DECISION_ID]
+        return math.floor(locomotive_value * self.game_instance.config.WILD_CARDS_NUM)
+
+    def choose_tickets(self, min_keep, tickets):
+        ticket_decision_values = [(i, self.decide_ticket()) for i in range(len(tickets))]
+        chosen_tickets_num = sum(self.is_active(value) for _, value in ticket_decision_values)
+        kept_tickets_num = max(min_keep, chosen_tickets_num)
+        ticket_decision_values.sort(key=lambda x: x[1], reverse=True)
+        ticket_decision_indices = [i for i, v in ticket_decision_values]
+        return ticket_decision_indices[:kept_tickets_num], ticket_decision_indices[kept_tickets_num:]
+
+    def get_input_array(self):
+        return self.adapter.get_state_array(self.player_id)
+
+    def get_decisions_array(self):
+        return self.network.activate(self.get_input_array())
+
+    @staticmethod
+    def get_max_value_index(values_list):
+        max_value = max(values_list)
+        return values_list.index(max_value)
+
+    @staticmethod
+    def is_active(value, threshold=0.5):
+        return 1 if value >= threshold else 0
