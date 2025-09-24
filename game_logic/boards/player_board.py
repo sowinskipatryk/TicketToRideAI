@@ -16,6 +16,9 @@ class PlayerBoard:
             self.G.add_node(city2)
         self.G.add_edge(city1, city2, weight=route_dist, edge_color=color)
 
+    def get_edges_num(self):
+        return len(self.G.edges)
+
     def is_ticket_completed(self, ticket: Tuple[str, str, int]) -> bool:
         start, end, _ = ticket
 

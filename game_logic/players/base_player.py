@@ -52,7 +52,7 @@ class BasePlayer:
         else:
             raise Exception("Invalid action")
         if move_completed:
-            logger.warning(f'move_completed')
+            logger.debug(f'move_completed')
         return move_completed
 
     def add_ticket(self, ticket: tuple) -> None:

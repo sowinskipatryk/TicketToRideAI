@@ -1,9 +1,10 @@
 import random
-from typing import List
+from typing import List, Dict
 from neat.nn.feed_forward import FeedForwardNetwork
 
 from game_logic.game_logger import logger
 from game_logic.enums.game_states import GameState
+from game_logic.game_stats import GameStats
 from game_logic.player_factory import PlayerFactory
 from game_logic.players.base_player import BasePlayer
 from game_logic.boards.game_board import GameBoard
@@ -19,12 +20,12 @@ class Game:
     def __init__(self, player_types: List[str], version: str, networks: List[FeedForwardNetwork] = None) -> None:
         self.players_num = len(player_types)
 
+        if not self.MIN_PLAYERS <= self.players_num <= self.MAX_PLAYERS:
+            raise ValueError(f'This game is designed for {self.MIN_PLAYERS}-{self.MAX_PLAYERS} players.')
+
         self.config_factory = ConfigFactory()
         self.config = self.config_factory.get_config(version)
         self.version = version
-
-        if not self.MIN_PLAYERS <= self.players_num <= self.MAX_PLAYERS:
-            raise ValueError(f'This game is designed for {self.MIN_PLAYERS}-{self.MAX_PLAYERS} players.')
 
         self.game_state = GameState.INIT
         logger.info(self.game_state)
@@ -38,11 +39,18 @@ class Game:
         self.train_card_manager = TrainCardManager(self)
 
         self.current_player_id = random.randrange(0, self.players_num)
-        self.total_moves = 0
-        self.completed_moves = 0
 
         self.last_player = None
         self.winner = None
+
+        self.game_stats = GameStats(self)
+
+        self.stats = {"invalid_moves": [0 for _ in range(self.players_num)],
+                      "completed_moves": [0 for _ in range(self.players_num)],
+                      "total_moves": [0 for _ in range(self.players_num)]}
+
+        if hasattr(self.config, 'LONGEST_ROUTE_BONUS'):
+            self.stats['longest_path_length'] = [0 for _ in range(self.players_num)]
 
     def move_to_next_player(self) -> None:
         self.current_player_id = (self.current_player_id + 1) % self.players_num
@@ -53,7 +61,7 @@ class Game:
     def last_round_condition(self, player: BasePlayer) -> bool:
         return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES_NUM
 
-    def play(self, max_moves: int = 0) -> List[int]:
+    def play(self, max_moves: int = 0) -> Dict:
         self.ticket_deck.set_ticket_pile_num_adapter()
         self.game_state = GameState.RUNNING
         logger.info(self.game_state)
@@ -64,15 +72,15 @@ class Game:
                                 min_keep=self.config.INITIAL_TICKETS_TO_KEEP_NUM)
 
         while self.game_state != GameState.LAST_ROUND:
-            if max_moves and self.total_moves > max_moves:
+            if max_moves and sum(self.stats['total_moves']) >= max_moves:
                 break
-            self.total_moves += 1
             current_player = self.players[self.current_player_id]
+            self.stats['total_moves'][self.current_player_id] += 1
             move_completed = current_player.play_turn()
             if move_completed:
-                self.completed_moves += 1
+                self.stats['completed_moves'][current_player.player_id] += 1
             else:
-                self.player_stats[current_player.player_id]['invalid_actions'] += 1
+                self.stats['invalid_moves'][current_player.player_id] += 1
             self.log_game_state()
             if self.last_round_condition(current_player):
                 self.last_player = current_player
@@ -80,15 +88,15 @@ class Game:
             self.move_to_next_player()
 
         while self.game_state != GameState.FINISHED:
-            if max_moves and self.total_moves > max_moves:
+            if max_moves and sum(self.stats['total_moves']) >= max_moves:
                 break
-            self.total_moves += 1
+            self.stats['total_moves'][self.current_player_id] += 1
             current_player = self.players[self.current_player_id]
             move_completed = current_player.play_turn()
             if move_completed:
-                self.completed_moves += 1
+                self.stats['completed_moves'][current_player.player_id] += 1
             else:
-                self.player_stats[current_player.player_id]['invalid_actions'] += 1
+                self.stats['invalid_moves'][current_player.player_id] += 1
             self.log_game_state()
             if current_player is self.last_player:
                 self.game_state = GameState.FINISHED
@@ -100,12 +108,20 @@ class Game:
 
         self.determine_winner()
         logger.info(f'{self.winner} {self.winner.tickets} won!')
-        logger.info(f'completed moves: {self.completed_moves}')
-        logger.info(f'total moves: {self.total_moves}')
+        logger.info(f"completed moves: {self.stats['completed_moves']}")
+        logger.info(f"total moves: {self.stats['total_moves']}")
 
         self.game_summary()
 
-        return [player.score for player in self.players]
+        self.stats['completed_tickets'] = [sum(player.tickets.values()) for player in self.players]
+        self.stats['total_tickets'] = [len(player.tickets) for player in self.players]
+        self.stats['trains_remaining'] = [player.trains_remaining for player in self.players]
+        self.stats['longest_path_owner'] = [player.longest_path for player in self.players]
+        self.stats['score'] = [player.score for player in self.players]
+        self.stats['claimed_routes'] = [player.player_board.get_edges_num() for player in self.players]
+
+        self.print_game_stats()
+        return self.stats
 
     def score_player_tickets(self) -> None:
         for player in self.players:
@@ -118,8 +134,9 @@ class Game:
         max_value = float('-inf')
         best_players = []
 
-        for player in self.players:
+        for player_id, player in enumerate(self.players):
             value = player.player_board.calculate_longest_path()
+            self.stats['longest_path_length'][player_id] = value
 
             if value > max_value:
                 max_value = value
@@ -175,3 +192,16 @@ class Game:
 
     def get_route_value(self, route_length: int) -> int:
         return self.config.ROUTE_VALUES[route_length]
+
+    def print_game_stats(self):
+        print('completed_moves:', self.stats['completed_moves'])
+        print('invalid_moves:', self.stats['invalid_moves'])
+        print('total_moves:', self.stats['total_moves'])
+        print('completed_tickets:', self.stats['completed_tickets'])
+        print('total_tickets:', self.stats['total_tickets'])
+        print('trains_remaining:', self.stats['trains_remaining'])
+        print('claimed_routes:', self.stats['claimed_routes'])
+        if hasattr(self.config, 'LONGEST_ROUTE_BONUS'):
+            print('longest_path_length:', self.stats['longest_path_length'])
+            print('longest_path_owner:', self.stats['longest_path_owner'])
+        print('score:', self.stats['score'])
