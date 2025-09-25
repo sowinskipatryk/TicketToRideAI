@@ -1,0 +1,389 @@
+- from: Vancouver
+  to: Calgary
+  length: 3
+  colors: [grey]
+
+- from: Vancouver
+  to: Seattle
+  length: 1
+  colors: [grey, grey]
+
+- from: Seattle
+  to: Portland
+  length: 1
+  colors: [grey, grey]
+
+- from: Seattle
+  to: Calgary
+  length: 4
+  colors: [grey]
+
+- from: Seattle
+  to: Helena
+  length: 6
+  colors: [yellow]
+
+- from: Portland
+  to: Salt Lake City
+  length: 6
+  colors: [blue]
+
+- from: Portland
+  to: San Francisco
+  length: 5
+  colors: [pink, green]
+
+- from: San Francisco
+  to: Salt Lake City
+  length: 5
+  colors: [white, orange]
+
+- from: San Francisco
+  to: Los Angeles
+  length: 3
+  colors: [pink, yellow]
+
+- from: Los Angeles
+  to: Las Vegas
+  length: 2
+  colors: [grey]
+
+- from: Los Angeles
+  to: Phoenix
+  length: 3
+  colors: [grey]
+
+- from: Los Angeles
+  to: El Paso
+  length: 6
+  colors: [black]
+
+- from: Phoenix
+  to: El Paso
+  length: 3
+  colors: [grey]
+
+- from: Phoenix
+  to: Santa Fe
+  length: 3
+  colors: [grey]
+
+- from: Phoenix
+  to: Denver
+  length: 5
+  colors: [white]
+
+- from: El Paso
+  to: Houston
+  length: 6
+  colors: [green]
+
+- from: El Paso
+  to: Dallas
+  length: 4
+  colors: [red]
+
+- from: El Paso
+  to: Oklahoma City
+  length: 5
+  colors: [yellow]
+
+- from: El Paso
+  to: Santa Fe
+  length: 3
+  colors: [grey]
+
+- from: Santa Fe
+  to: Denver
+  length: 2
+  colors: [grey]
+
+- from: Santa Fe
+  to: Oklahoma City
+  length: 3
+  colors: [blue]
+
+- from: Las Vegas
+  to: Salt Lake City
+  length: 3
+  colors: [orange]
+
+- from: Salt Lake City
+  to: Helena
+  length: 3
+  colors: [pink]
+
+- from: Salt Lake City
+  to: Denver
+  length: 3
+  colors: [yellow, red]
+
+- from: Calgary
+  to: Helena
+  length: 4
+  colors: [grey]
+
+- from: Calgary
+  to: Winnipeg
+  length: 6
+  colors: [white]
+
+- from: Helena
+  to: Winnipeg
+  length: 4
+  colors: [blue]
+
+- from: Helena
+  to: Duluth
+  length: 6
+  colors: [orange]
+
+- from: Helena
+  to: Omaha
+  length: 5
+  colors: [red]
+
+- from: Helena
+  to: Denver
+  length: 4
+  colors: [green]
+
+- from: Denver
+  to: Omaha
+  length: 4
+  colors: [pink]
+
+- from: Denver
+  to: Kansas City
+  length: 4
+  colors: [orange, black]
+
+- from: Denver
+  to: Oklahoma City
+  length: 4
+  colors: [red]
+
+- from: Houston
+  to: Dallas
+  length: 1
+  colors: [grey, grey]
+
+- from: Houston
+  to: New Orleans
+  length: 2
+  colors: [grey]
+
+- from: Dallas
+  to: Oklahoma City
+  length: 2
+  colors: [grey, grey]
+
+- from: Dallas
+  to: Little Rock
+  length: 2
+  colors: [grey]
+
+- from: Oklahoma City
+  to: Little Rock
+  length: 2
+  colors: [grey]
+
+- from: Oklahoma City
+  to: Kansas City
+  length: 2
+  colors: [grey, grey]
+
+- from: Kansas City
+  to: Saint Louis
+  length: 2
+  colors: [pink, blue]
+
+- from: Kansas City
+  to: Omaha
+  length: 1
+  colors: [grey, grey]
+
+- from: Omaha
+  to: Chicago
+  length: 4
+  colors: [blue]
+
+- from: Omaha
+  to: Duluth
+  length: 2
+  colors: [grey, grey]
+
+- from: Duluth
+  to: Chicago
+  length: 3
+  colors: [red]
+
+- from: Duluth
+  to: Winnipeg
+  length: 4
+  colors: [black]
+
+- from: Duluth
+  to: Toronto
+  length: 6
+  colors: [pink]
+
+- from: Duluth
+  to: Sault St. Marie
+  length: 3
+  colors: [grey]
+
+- from: Winnipeg
+  to: Sault St. Marie
+  length: 6
+  colors: [grey]
+
+- from: Sault St. Marie
+  to: Montreal
+  length: 5
+  colors: [black]
+
+- from: Sault St. Marie
+  to: Toronto
+  length: 2
+  colors: [grey]
+
+- from: Chicago
+  to: Pittsburgh
+  length: 3
+  colors: [orange, black]
+
+- from: Chicago
+  to: Saint Louis
+  length: 2
+  colors: [white, green]
+
+- from: Saint Louis
+  to: Pittsburgh
+  length: 5
+  colors: [green]
+
+- from: Saint Louis
+  to: Little Rock
+  length: 2
+  colors: [grey]
+
+- from: Saint Louis
+  to: Nashville
+  length: 2
+  colors: [grey]
+
+- from: Little Rock
+  to: Nashville
+  length: 3
+  colors: [white]
+
+- from: Little Rock
+  to: New Orleans
+  length: 3
+  colors: [green]
+
+- from: New Orleans
+  to: Atlanta
+  length: 4
+  colors: [yellow, orange]
+
+- from: New Orleans
+  to: Miami
+  length: 6
+  colors: [red]
+
+- from: Miami
+  to: Atlanta
+  length: 5
+  colors: [blue]
+
+- from: Miami
+  to: Charleston
+  length: 4
+  colors: [pink]
+
+- from: Nashville
+  to: Raleigh
+  length: 3
+  colors: [black]
+
+- from: Nashville
+  to: Atlanta
+  length: 1
+  colors: [grey]
+
+- from: Nashville
+  to: Pittsburgh
+  length: 4
+  colors: [yellow]
+
+- from: Atlanta
+  to: Raleigh
+  length: 2
+  colors: [grey, grey]
+
+- from: Atlanta
+  to: Charleston
+  length: 2
+  colors: [grey]
+
+- from: Raleigh
+  to: Charleston
+  length: 2
+  colors: [grey]
+
+- from: Raleigh
+  to: Washington
+  length: 2
+  colors: [grey, grey]
+
+- from: Pittsburgh
+  to: Raleigh
+  length: 2
+  colors: [grey]
+
+- from: Pittsburgh
+  to: New York
+  length: 2
+  colors: [white, green]
+
+- from: Pittsburgh
+  to: Washington
+  length: 2
+  colors: [grey]
+
+- from: Washington
+  to: New York
+  length: 2
+  colors: [orange, black]
+
+- from: Toronto
+  to: Pittsburgh
+  length: 2
+  colors: [grey]
+
+- from: Toronto
+  to: Montreal
+  length: 3
+  colors: [grey]
+
+- from: Toronto
+  to: Chicago
+  length: 4
+  colors: [white]
+
+- from: Montreal
+  to: Boston
+  length: 2
+  colors: [grey, grey]
+
+- from: Montreal
+  to: New York
+  length: 3
+  colors: [blue]
+
+- from: New York
+  to: Boston
+  length: 2
+  colors: [yellow, red]

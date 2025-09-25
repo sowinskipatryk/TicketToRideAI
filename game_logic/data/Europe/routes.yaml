@@ -1,0 +1,454 @@
+- from: Edinburgh
+  to: London
+  length: 4
+  colors: [orange, black]
+
+- from: London
+  to: Amsterdam
+  length: 2
+  colors: [grey]
+
+- from: Amsterdam
+  to: Essen
+  length: 3
+  colors: [yellow]
+
+- from: Amsterdam
+  to: Bruxelles
+  length: 1
+  colors: [black]
+
+- from: Bruxelles
+  to: Frankfurt
+  length: 2
+  colors: [blue]
+
+- from: Amsterdam
+  to: Frankfurt
+  length: 2
+  colors: [white]
+
+- from: Essen
+  to: Berlin
+  length: 2
+  colors: [blue]
+
+- from: Frankfurt
+  to: Berlin
+  length: 3
+  colors: [black, red]
+
+- from: Berlin
+  to: Danzig
+  length: 4
+  colors: [grey]
+
+- from: Dieppe
+  to: Paris
+  length: 1
+  colors: [purple]
+
+- from: Sochi
+  to: Erzurum
+  length: 3
+  colors: [red]
+
+- from: Sevastopol
+  to: Erzurum
+  length: 4
+  colors: [grey]
+
+- from: Dieppe
+  to: Bruxelles
+  length: 2
+  colors: [green]
+
+- from: Budapest
+  to: Bucuresti
+  length: 4
+  colors: [grey]
+
+- from: Bucuresti
+  to: Sevastopol
+  length: 4
+  colors: [white]
+
+- from: Bucuresti
+  to: Constantinople
+  length: 3
+  colors: [yellow]
+
+- from: Rostov
+  to: Sevastopol
+  length: 4
+  colors: [grey]
+
+- from: Bruxelles
+  to: Paris
+  length: 2
+  colors: [yellow, red]
+
+- from: Paris
+  to: Marseille
+  length: 4
+  colors: [grey]
+
+- from: Zürich
+  to: Marseille
+  length: 2
+  colors: [purple]
+
+- from: Brindisi
+  to: Palermo
+  length: 3
+  colors: [grey]
+
+- from: Palermo
+  to: Smyrna
+  length: 6
+  colors: [grey]
+
+- from: Smyrna
+  to: Angora
+  length: 3
+  colors: [orange]
+
+- from: Constantinople
+  to: Angora
+  length: 2
+  colors: [grey]
+
+- from: Angora
+  to: Erzurum
+  length: 3
+  colors: [black]
+
+- from: Barcelona
+  to: Marseille
+  length: 4
+  colors: [grey]
+
+- from: Marseille
+  to: Roma
+  length: 4
+  colors: [grey]
+
+- from: Danzig
+  to: Riga
+  length: 3
+  colors: [black]
+
+- from: Riga
+  to: Petrograd
+  length: 4
+  colors: [grey]
+
+- from: Stockholm
+  to: Petrograd
+  length: 8
+  colors: [grey]
+
+- from: Moskva
+  to: Petrograd
+  length: 4
+  colors: [white]
+
+- from: Warszawa
+  to: Wilno
+  length: 3
+  colors: [red]
+
+- from: Danzig
+  to: Warszawa
+  length: 2
+  colors: [grey]
+
+- from: Kyiv
+  to: Bucuresti
+  length: 4
+  colors: [grey]
+
+- from: Budapest
+  to: Sarajevo
+  length: 3
+  colors: [purple]
+
+- from: Zürich
+  to: Venezia
+  length: 2
+  colors: [green]
+
+- from: Roma
+  to: Brindisi
+  length: 2
+  colors: [white]
+
+- from: Athina
+  to: Smyrna
+  length: 2
+  colors: [grey]
+
+- from: London
+  to: Dieppe
+  length: 2
+  colors: [grey, grey]
+
+- from: Dieppe
+  to: Brest
+  length: 2
+  colors: [orange]
+
+- from: Brest
+  to: Paris
+  length: 3
+  colors: [black]
+
+- from: Paris
+  to: Dieppe
+  length: 1
+  colors: [purple, purple]
+
+- from: Paris
+  to: Frankfurt
+  length: 3
+  colors: [white, orange]
+
+- from: Frankfurt
+  to: München
+  length: 2
+  colors: [purple]
+
+- from: München
+  to: Venezia
+  length: 2
+  colors: [blue]
+
+- from: Budapest
+  to: Kyiv
+  length: 6
+  colors: [grey]
+
+- from: Warszawa
+  to: Kyiv
+  length: 4
+  colors: [grey]
+
+- from: Kharkov
+  to: Moskva
+  length: 4
+  colors: [grey]
+
+- from: Wilno
+  to: Kyiv
+  length: 2
+  colors: [grey]
+
+- from: Riga
+  to: Wilno
+  length: 4
+  colors: [green]
+
+- from: Sofia
+  to: Athina
+  length: 3
+  colors: [purple]
+
+- from: Wien
+  to: Warszawa
+  length: 4
+  colors: [blue]
+
+- from: Pamplona
+  to: Marseille
+  length: 4
+  colors: [red]
+
+- from: Smyrna
+  to: Constantinople
+  length: 2
+  colors: [grey]
+
+- from: Wilno
+  to: Smolensk
+  length: 3
+  colors: [yellow]
+
+- from: Wilno
+  to: Petrograd
+  length: 4
+  colors: [blue]
+
+- from: Bucuresti
+  to: Sofia
+  length: 2
+  colors: [grey]
+
+- from: Wien
+  to: Budapest
+  length: 1
+  colors: [red, white]
+
+- from: Warszawa
+  to: Berlin
+  length: 4
+  colors: [purple, yellow]
+
+- from: Berlin
+  to: Wien
+  length: 3
+  colors: [green]
+
+- from: Wien
+  to: Zagreb
+  length: 2
+  colors: [grey]
+
+- from: München
+  to: Wien
+  length: 3
+  colors: [orange]
+
+- from: Zagreb
+  to: Budapest
+  length: 2
+  colors: [orange]
+
+- from: Venezia
+  to: Zagreb
+  length: 2
+  colors: [grey]
+
+- from: Zagreb
+  to: Sarajevo
+  length: 3
+  colors: [red]
+
+- from: Sarajevo
+  to: Sofia
+  length: 2
+  colors: [grey]
+
+- from: Sarajevo
+  to: Athina
+  length: 4
+  colors: [green]
+
+- from: Sofia
+  to: Constantinople
+  length: 3
+  colors: [blue]
+
+- from: Constantinople
+  to: Sevastopol
+  length: 4
+  colors: [grey]
+
+- from: Sevastopol
+  to: Sochi
+  length: 2
+  colors: [grey]
+
+- from: Sochi
+  to: Rostov
+  length: 2
+  colors: [grey]
+
+- from: Rostov
+  to: Kharkov
+  length: 2
+  colors: [green]
+
+- from: Kharkov
+  to: Kyiv
+  length: 4
+  colors: [grey]
+
+- from: Kyiv
+  to: Smolensk
+  length: 3
+  colors: [red]
+
+- from: Smolensk
+  to: Moskva
+  length: 2
+  colors: [orange]
+
+- from: Stockholm
+  to: København
+  length: 3
+  colors: [yellow, white]
+
+- from: København
+  to: Essen
+  length: 3
+  colors: [grey, grey]
+
+- from: Essen
+  to: Frankfurt
+  length: 2
+  colors: [green]
+
+- from: Paris
+  to: Zürich
+  length: 3
+  colors: [grey]
+
+- from: Zürich
+  to: München
+  length: 2
+  colors: [yellow]
+
+- from: Venezia
+  to: Roma
+  length: 2
+  colors: [black]
+
+- from: Roma
+  to: Palermo
+  length: 4
+  colors: [grey]
+
+- from: Brindisi
+  to: Athina
+  length: 4
+  colors: [grey]
+
+- from: Paris
+  to: Pamplona
+  length: 4
+  colors: [blue, green]
+
+- from: Pamplona
+  to: Madrid
+  length: 3
+  colors: [black, white]
+
+- from: Madrid
+  to: Lisboa
+  length: 3
+  colors: [purple]
+
+- from: Lisboa
+  to: Cadiz
+  length: 2
+  colors: [blue]
+
+- from: Madrid
+  to: Barcelona
+  length: 2
+  colors: [yellow]
+
+- from: Madrid
+  to: Cadiz
+  length: 3
+  colors: [orange]
+
+- from: Pamplona
+  to: Barcelona
+  length: 2
+  colors: [grey]
+
+- from: Pamplona
+  to: Brest
+  length: 4
+  colors: [purple]

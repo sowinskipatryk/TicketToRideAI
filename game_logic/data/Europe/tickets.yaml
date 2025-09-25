@@ -1,0 +1,183 @@
+- from: Athina
+  to: Angora
+  points: 5
+
+- from: Budapest
+  to: Sofia
+  points: 5
+
+- from: Frankfurt
+  to: København
+  points: 5
+
+- from: Rostov
+  to: Erzurum
+  points: 5
+
+- from: Sofia
+  to: Smyrna
+  points: 5
+
+- from: Kyiv
+  to: Petrograd
+  points: 6
+
+- from: Zürich
+  to: Brindisi
+  points: 6
+
+- from: Zürich
+  to: Budapest
+  points: 6
+
+- from: Warszawa
+  to: Smolensk
+  points: 6
+
+- from: Zagreb
+  to: Brindisi
+  points: 6
+
+- from: Paris
+  to: Zagreb
+  points: 7
+
+- from: Brest
+  to: Marseille
+  points: 7
+
+- from: London
+  to: Berlin
+  points: 7
+
+- from: Edinburgh
+  to: Paris
+  points: 7
+
+- from: Amsterdam
+  to: Pamplona
+  points: 7
+
+- from: Roma
+  to: Smyrna
+  points: 8
+
+- from: Palermo
+  to: Constantinople
+  points: 8
+
+- from: Sarajevo
+  to: Sevastopol
+  points: 8
+
+- from: Madrid
+  to: Dieppe
+  points: 8
+
+- from: Barcelona
+  to: Bruxelles
+  points: 8
+
+- from: Paris
+  to: Wien
+  points: 8
+
+- from: Barcelona
+  to: München
+  points: 8
+
+- from: Brest
+  to: Venezia
+  points: 8
+
+- from: Smolensk
+  to: Rostov
+  points: 8
+
+- from: Marseille
+  to: Essen
+  points: 8
+
+- from: Kyiv
+  to: Sochi
+  points: 8
+
+- from: Madrid
+  to: Zürich
+  points: 8
+
+- from: Berlin
+  to: Bucuresti
+  points: 8
+
+- from: Bruxelles
+  to: Danzig
+  points: 9
+
+- from: Berlin
+  to: Roma
+  points: 9
+
+- from: Angora
+  to: Kharkov
+  points: 10
+
+- from: Riga
+  to: Bucuresti
+  points: 10
+
+- from: Essen
+  to: Kyiv
+  points: 10
+
+- from: Venezia
+  to: Constantinople
+  points: 10
+
+- from: London
+  to: Wien
+  points: 10
+
+- from: Athina
+  to: Wilno
+  points: 11
+
+- from: Stockholm
+  to: Wien
+  points: 11
+
+- from: Berlin
+  to: Moskva
+  points: 12
+
+- from: Amsterdam
+  to: Wilno
+  points: 12
+
+- from: Frankfurt
+  to: Smolensk
+  points: 13
+
+- from: Lisboa
+  to: Danzig
+  points: 20
+
+- from: Brest
+  to: Petrograd
+  points: 20
+
+- from: Palermo
+  to: Moskva
+  points: 20
+
+- from: København
+  to: Erzurum
+  points: 21
+
+- from: Edinburgh
+  to: Athina
+  points: 21
+
+- from: Cadiz
+  to: Stockholm
+  points: 21
