@@ -4,18 +4,18 @@ import networkx as nx
 from collections import defaultdict
 from typing import Dict, Union, Tuple, TYPE_CHECKING
 
-from game_logic.game_logger import logger
-from game_logic.utils import load_routes, load_cities
+from game.data_loader import load_routes, load_cities
+from game.game_logger import logger
 
 if TYPE_CHECKING:
-    from game_logic.game import Game
+    from game.core import Game
 
 
 class GameBoard:
-    def __init__(self, game_instance: 'Game'):
-        self.game_instance = game_instance
-        self.routes = load_routes(self.game_instance.version)
-        self.cities = load_cities(self.game_instance.version)
+    def __init__(self, game: 'Game'):
+        self.game = game
+        self.routes = load_routes(self.game.version)
+        self.cities = load_cities(self.game.version)
         self.G = nx.MultiGraph()
         self._fill_graph()
 
@@ -27,12 +27,11 @@ class GameBoard:
 
         link_id = 0
         for route_id, route in enumerate(self.routes):
-            colors = route[3:]
-            for color in colors:
-                self.G.add_edge(route[0], route[1],
+            for color in route['colors']:
+                self.G.add_edge(route['from'], route['to'],
                                 route_id=route_id,
                                 link_id=link_id,
-                                weight=int(route[2]),
+                                weight=route['length'],
                                 edge_color=color,
                                 claimed_by=None)
                 link_id += 1
@@ -42,6 +41,7 @@ class GameBoard:
             if data['link_id'] == link_id:
                 data['claimed_by'] = player_color
                 return True
+        return False
 
     def get_route_owners(self, route_id):
         claimed_by = []
@@ -69,7 +69,7 @@ class GameBoard:
             logger.info('All links are claimed for this route!')
             return
 
-        if not self.game_instance.config.WILD_CARD_RESTRICTION or self.game_instance.players_num > 3:
+        if not self.game.config.WILD_CARD_RESTRICTION or self.game.players_num > 3:
             return True
 
         logger.info('You can only claim one link for each route in this game configuration!')
@@ -78,6 +78,43 @@ class GameBoard:
         for u, v, data in self.G.edges(data=True):
             if data['link_id'] == link_id:
                 return u, v, data
+
+    def player_subgraph(self, player_color):
+        G = nx.Graph()
+        for u, v, data in self.G.edges(data=True):
+            if data["claimed_by"] == player_color:
+                G.add_edge(u, v, weight=data["weight"], edge_color=data["edge_color"])
+        return G
+
+    def is_ticket_completed(self, player_color, ticket) -> bool:
+        G = self.player_subgraph(player_color)
+        if ticket.city_from not in G or ticket.city_to not in G:
+            return False
+        return nx.has_path(G, ticket.city_from, ticket.city_to)
+
+    def calculate_longest_path(self, player_color) -> int:
+        G = self.player_subgraph(player_color)
+
+        def dfs(node, visited_edges):
+            max_length = 0
+            for neighbor in G.neighbors(node):
+                edge = tuple(sorted((node, neighbor)))
+                if edge in visited_edges:
+                    continue
+                visited_edges.add(edge)
+                edge_length = G[node][neighbor]["weight"]
+                max_length = max(max_length, edge_length + dfs(neighbor, visited_edges))
+                visited_edges.remove(edge)
+            return max_length
+
+        longest = 0
+        for node in G.nodes:
+            longest = max(longest, dfs(node, set()))
+        return longest
+
+    def count_claimed_routes(self, player_color) -> int:
+        G = self.player_subgraph(player_color)
+        return G.number_of_edges()
 
     def draw_possession_graph(self, pause_time: int = 30) -> None:
         plt.figure(figsize=(18, 8))
@@ -127,8 +164,8 @@ class GameBoard:
             rad = 0.1 * (i + 1)
 
             if not data['claimed_by'] and (not any(route_owners[(u, v)])
-                                           or not self.game_instance.config.WILD_CARD_RESTRICTION
-                                           or self.game_instance.players_num > 3):
+                                           or not self.game.config.WILD_CARD_RESTRICTION
+                                           or self.game.players_num > 3):
                 edge = nx.draw_networkx_edges(self.G, pos, edgelist=[(u, v)], edge_color=data["edge_color"],
                                               width=2, ax=ax, connectionstyle=f"arc3,rad={rad}")
                 edge_labels[(u, v, i)] = f"#{data['link_id']} L{data['weight']}"
