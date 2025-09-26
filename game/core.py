@@ -2,15 +2,15 @@ import random
 from typing import List, Dict
 from neat.nn.feed_forward import FeedForwardNetwork
 
-from game_logic.game_logger import logger
-from game_logic.enums.game_states import GameState
-from game_logic.game_stats import GameStats
-from game_logic.player_factory import PlayerFactory
-from game_logic.players.base_player import BasePlayer
-from game_logic.boards.game_board import GameBoard
-from game_logic.ticket_deck import TicketDeck
-from game_logic.train_card_manager import TrainCardManager
-from game_logic.config_factory import ConfigFactory
+from game.game_logger import logger
+from game.enums import GameState
+from game.game_stats import GameStats
+from game.player_factory import PlayerFactory
+from game.players.base_player import BasePlayer
+from game.game_board import GameBoard
+from game.ticket_deck import TicketDeck, Ticket
+from game.train_card_manager import TrainCardManager
+from game.config_factory import ConfigFactory
 
 
 class Game:
@@ -59,7 +59,7 @@ class Game:
         return self.players[self.current_player_id]
 
     def last_round_condition(self, player: BasePlayer) -> bool:
-        return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES_NUM
+        return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES
 
     def play(self, max_moves: int = 0) -> Dict:
         self.ticket_deck.set_ticket_pile_num_adapter()
@@ -67,9 +67,9 @@ class Game:
         logger.info(self.game_state)
 
         for player in self.players:
-            player.draw_initial_train_cards(self.config.STARTING_HAND_SIZE)
-            player.draw_tickets(num_tickets=self.config.INITIAL_TICKETS_DEALT_NUM,
-                                min_keep=self.config.INITIAL_TICKETS_TO_KEEP_NUM)
+            player.draw_initial_train_cards(self.config.NUM_TRAIN_CARDS_DEALT_INIT)
+            player.draw_tickets(num_tickets=self.config.NUM_TICKETS_DEALT_INIT,
+                                min_keep=self.config.MIN_TICKETS_KEPT_INIT)
 
         while self.game_state != GameState.LAST_ROUND:
             if max_moves and sum(self.stats['total_moves']) >= max_moves:
@@ -118,7 +118,7 @@ class Game:
         self.stats['trains_remaining'] = [player.trains_remaining for player in self.players]
         self.stats['longest_path_owner'] = [player.longest_path for player in self.players]
         self.stats['score'] = [player.score for player in self.players]
-        self.stats['claimed_routes'] = [player.player_board.get_edges_num() for player in self.players]
+        self.stats['claimed_routes'] = [self.board.count_claimed_routes(player.color) for player in self.players]
 
         self.print_game_stats()
         return self.stats
@@ -135,7 +135,7 @@ class Game:
         best_players = []
 
         for player_id, player in enumerate(self.players):
-            value = player.player_board.calculate_longest_path()
+            value = self.board.calculate_longest_path(player.color)
             self.stats['longest_path_length'][player_id] = value
 
             if value > max_value:
@@ -155,7 +155,6 @@ class Game:
                                 reverse=True)
         self.winner = sorted_players[0]
         logger.info(f'{self.winner} wins!')
-        # self.winner.player_board.draw_graph()
         logger.info('winner tickets:', self.winner.tickets)
         # self.game_manager.board.draw_possession_graph()
 
@@ -181,8 +180,8 @@ class Game:
     def deal_draw_pile_card(self):
         return self.train_card_manager.pick_draw_pile_card()
 
-    def deal_tickets(self, num_tickets: int) -> List[tuple]:
-        dealt_tickets = []
+    def deal_tickets(self, num_tickets: int) -> List[Ticket]:
+        dealt_tickets: List[Ticket] = []
         while len(dealt_tickets) < num_tickets:
             ticket = self.ticket_deck.remove()
             if ticket is None:

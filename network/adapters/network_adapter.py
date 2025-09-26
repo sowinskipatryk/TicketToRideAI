@@ -1,4 +1,4 @@
-from game_logic.game_logger import logger
+from game.game_logger import logger
 from network.adapters.base_adapter import BaseAdapter
 
 
@@ -27,8 +27,8 @@ class NetworkAdapter(BaseAdapter):
         self.game_instance = game_instance
         self.train_colors_num = len(self.game_instance.config.TRAIN_COLORS)
 
-        self.common_values = ((([self.VALUE_NEUTRAL] * self.game_instance.config.FACE_UP_CARDS_NUM * (self.train_colors_num + 1)
-                              + [self.VALUE_POSITIVE] * 3)
+        self.common_values = ((([self.VALUE_NEUTRAL] * self.game_instance.config.NUM_FACE_UP_CARDS * (self.train_colors_num + 1)
+                                + [self.VALUE_POSITIVE] * 3)
                               + [self.VALUE_POSITIVE] * self.game_instance.players_num)
                               + [self.VALUE_NEUTRAL] * self.game_instance.board.get_route_links_num() * self.game_instance.players_num)
 
@@ -38,7 +38,7 @@ class NetworkAdapter(BaseAdapter):
                                ) for _ in range(self.game_instance.players_num)]
 
         self.face_up_cards_pos = 0
-        self.draw_pile_num_pos = self.game_instance.config.FACE_UP_CARDS_NUM * (self.train_colors_num + 1)
+        self.draw_pile_num_pos = self.game_instance.config.NUM_FACE_UP_CARDS * (self.train_colors_num + 1)
         self.discard_pile_num_pos = self.draw_pile_num_pos + 1
         self.ticket_pile_num_pos = self.discard_pile_num_pos + 1
         self.trains_num_pos = self.ticket_pile_num_pos + 1
@@ -50,20 +50,20 @@ class NetworkAdapter(BaseAdapter):
         self.ticket_completed_pos = self.ticket_owner_pos + self.game_instance.ticket_deck.get_tickets_num()
 
     def normalize_trains_num(self, trains_num):
-        return trains_num / self.game_instance.config.TRAIN_FIGURES_NUM
+        return trains_num / self.game_instance.config.NUM_TRAIN_FIGURES
 
     def normalize_train_pile_num(self, cards_num):
-        return cards_num / ((self.game_instance.config.TRAIN_CARDS_NUM * self.train_colors_num)
-                            + self.game_instance.config.WILD_CARDS_NUM)
+        return cards_num / ((self.game_instance.config.NUM_TRAIN_CARDS_PER_COLOR * self.train_colors_num)
+                            + self.game_instance.config.NUM_WILD_CARDS)
 
     def normalize_ticket_pile_num(self, cards_num):
         return cards_num / self.game_instance.ticket_deck.get_tickets_num()
 
     def normalize_color_cards_num(self, cards_num):
-        return cards_num / self.game_instance.config.TRAIN_CARDS_NUM
+        return cards_num / self.game_instance.config.NUM_TRAIN_CARDS_PER_COLOR
 
     def normalize_wild_cards_num(self, cards_num):
-        return cards_num / self.game_instance.config.WILD_CARDS_NUM
+        return cards_num / self.game_instance.config.NUM_WILD_CARDS
 
     def normalize_player(self, player_id):
         return player_id / (self.game_instance.players_num - 1)

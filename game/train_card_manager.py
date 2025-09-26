@@ -1,10 +1,10 @@
 import random
 from typing import List, Optional, TYPE_CHECKING
 
-from game_logic.game_logger import logger
+from game.game_logger import logger
 
 if TYPE_CHECKING:
-    from game_logic.game import Game
+    from game.core import Game
 
 
 class TrainCardManager:
@@ -23,8 +23,8 @@ class TrainCardManager:
         self.fill_face_up()
 
     def _create_draw_pile(self) -> List[str]:
-        deck = [x for x in self.game_instance.config.TRAIN_COLORS for _ in range(self.game_instance.config.TRAIN_CARDS_NUM)]
-        deck += [self.WILD_CARD for _ in range(self.game_instance.config.WILD_CARDS_NUM)]
+        deck = [x for x in self.game_instance.config.TRAIN_COLORS for _ in range(self.game_instance.config.NUM_TRAIN_CARDS_PER_COLOR)]
+        deck += [self.WILD_CARD for _ in range(self.game_instance.config.NUM_WILD_CARDS)]
         random.shuffle(deck)
         return deck
 
@@ -63,7 +63,7 @@ class TrainCardManager:
         logger.debug(f'before {self._face_up_cards}')
         self.get_state()
         tries = 0
-        while self.get_face_up_cards_num() < self.game_instance.config.FACE_UP_CARDS_NUM:
+        while self.get_face_up_cards_num() < self.game_instance.config.NUM_FACE_UP_CARDS:
             closest_none_id = self._face_up_cards.index(None)
             card = self.pick_draw_pile_card()
             if card is None:

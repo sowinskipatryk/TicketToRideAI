@@ -1,33 +1,32 @@
 import collections
+from abc import ABC, abstractmethod
 from typing import List, Tuple, Dict, TYPE_CHECKING
 
 from neat.nn import FeedForwardNetwork
 
-from game_logic.boards.player_board import PlayerBoard
-from game_logic.enums.decisions.actions import ActionDecision
-from game_logic.enums.decisions.train_cards import TrainCardDecision
-from game_logic.enums.player_colors import PlayerColor
-from game_logic.game_logger import logger
+from game.enums import ActionDecision
+from game.enums import TrainCardDecision, PlayerColor
+from game.game_logger import logger
 from network.adapters.base_adapter import BaseAdapter
+from game.ticket_deck import Ticket
 
 if TYPE_CHECKING:
-    from game_logic.game import Game
+    from game.core import Game
 
 
-class BasePlayer:
+class BasePlayer(ABC):
     PLAYER_COLORS = list(PlayerColor)
 
-    def __init__(self, color_index: int, game_instance: 'Game', adapter: BaseAdapter,
+    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter,
                  network: FeedForwardNetwork = None) -> None:
         self.player_id = color_index
-        self.game_instance = game_instance
+        self.game = game
         self.color = self.PLAYER_COLORS[color_index]
         self.tickets = {}
         self.hand = collections.defaultdict(int)
         self.score = 0
-        self.trains_remaining = self.game_instance.config.TRAIN_FIGURES_NUM
+        self.trains_remaining = self.game.config.NUM_TRAIN_FIGURES
         self.longest_path = False
-        self.player_board = PlayerBoard(self)
         self.network = network
         self.adapter = adapter
 
@@ -43,10 +42,10 @@ class BasePlayer:
         if action == ActionDecision.CLAIM_ROUTE:
             move_completed = self.claim_route()
         elif action == ActionDecision.DRAW_TICKETS:
-            move_completed = self.draw_tickets(self.game_instance.config.TICKETS_DEALT_NUM,
-                                               self.game_instance.config.TICKETS_TO_KEEP_NUM)
+            move_completed = self.draw_tickets(self.game.config.NUM_TICKETS_DEALT,
+                                               self.game.config.MIN_TICKETS_KEPT)
         elif action == ActionDecision.DRAW_CARDS:
-            move_completed = self.draw_train_cards(self.game_instance.config.TRAIN_CARDS_DEALT_NUM)
+            move_completed = self.draw_train_cards(self.game.config.NUM_TRAIN_CARDS_DEALT)
         elif action == ActionDecision.SKIP:
             move_completed = True
         else:
@@ -55,11 +54,11 @@ class BasePlayer:
             logger.debug(f'move_completed')
         return move_completed
 
-    def add_ticket(self, ticket: tuple) -> None:
+    def add_ticket(self, ticket: Ticket) -> None:
         self.tickets[ticket] = False
         self.adapter.set_ticket_owner(self.player_id, ticket)
 
-    def complete_ticket(self, ticket: tuple) -> None:
+    def complete_ticket(self, ticket: Ticket) -> None:
         if ticket not in self.tickets:
             raise ValueError(f'Ticket: {ticket} not found')
         self.tickets[ticket] = True
@@ -74,8 +73,8 @@ class BasePlayer:
                 self.subtract_points(ticket_value)
 
     @staticmethod
-    def get_ticket_value(ticket: tuple) -> int:
-        return ticket[2]
+    def get_ticket_value(ticket: Ticket) -> int:
+        return ticket.points
 
     def add_cards_to_hand(self, cards: str | List[str]) -> None:
         logger.debug(f'add_cards_to_hand: {cards}')
@@ -125,13 +124,13 @@ class BasePlayer:
         self.longest_path = True
 
     def draw_tickets(self, num_tickets: int, min_keep: int) -> bool:
-        tickets = self.game_instance.deal_tickets(num_tickets)
+        tickets = self.game.deal_tickets(num_tickets)
 
         if not tickets:
             logger.debug('no tickets')
             return False
 
-        kept, discarded = self.choose_tickets(min_keep, tickets)
+        kept, discarded = self.decide_tickets(min_keep, tickets)
 
         for index in range(len(tickets)):
             if index in kept:
@@ -139,13 +138,13 @@ class BasePlayer:
                 self.add_ticket(tickets[index])
             else:
                 logger.info(f'{self} discards ticket {tickets[index]}')
-                self.game_instance.ticket_deck.insert(tickets[index])
+                self.game.ticket_deck.insert(tickets[index])
 
         return True
 
     def draw_initial_train_cards(self, num_cards: int) -> bool:
         logger.info(f'draw_initial_train_cards')
-        cards = [self.game_instance.deal_draw_pile_card() for _ in range(num_cards)]
+        cards = [self.game.deal_draw_pile_card() for _ in range(num_cards)]
         self.add_cards_to_hand(cards)
         return True
 
@@ -157,14 +156,14 @@ class BasePlayer:
             logger.info(f'train_card_decision: {train_card_decision}')
 
             if train_card_decision == TrainCardDecision.DRAW_PILE:
-                train_card = self.game_instance.deal_draw_pile_card()
+                train_card = self.game.deal_draw_pile_card()
             elif train_card_decision in list(TrainCardDecision):
-                train_card = self.game_instance.deal_face_up_card(train_card_decision_id)
+                train_card = self.game.deal_face_up_card(train_card_decision_id)
                 if train_card is None:
                     logger.info('no card in this position')
                     return False
                 elif train_card == 'wild':
-                    if self.game_instance.config.WILD_CARD_RESTRICTION:
+                    if self.game.config.WILD_CARD_RESTRICTION:
                         if i != 0:
                             return False
                         else:
@@ -183,16 +182,16 @@ class BasePlayer:
 
     def claim_route(self) -> bool:
         route_link_id = self.decide_route()
-        city1, city2, route_data = self.game_instance.board.get_route_data(route_link_id)
+        city1, city2, route_data = self.game.board.get_route_data(route_link_id)
         logger.info(f'chosen route: {city1, city2, route_data}')
 
-        if not self.game_instance.board.validate_route(self.color, route_data):
+        if not self.game.board.validate_route(self.color, route_data):
             return False
 
         cards_color = route_data['edge_color']
         if cards_color == 'grey':
             cards_color_id = self.decide_cards_color()
-            cards_color = self.game_instance.config.TRAIN_COLORS[cards_color_id]
+            cards_color = self.game.config.TRAIN_COLORS[cards_color_id]
 
         route_dist = route_data['weight']
         if route_dist > self.trains_remaining:
@@ -208,16 +207,15 @@ class BasePlayer:
         if self.hand[cards_color] + wild_cards_used_num < route_dist:
             return False
 
-        self.game_instance.board.claim_route(route_link_id, self.color)
+        self.game.board.claim_route(route_link_id, self.color)
         self.remove_cards_from_hand(cards_color, color_cards_used_num)
         self.remove_cards_from_hand('wild', wild_cards_used_num)
         logger.debug(f'color_cards_used {color_cards_used_num}')
         logger.debug(f'cards_color {cards_color}')
-        self.game_instance.train_card_manager.add_to_discard_pile([cards_color for _ in range(color_cards_used_num)])
-        self.game_instance.train_card_manager.add_to_discard_pile(['wild' for _ in range(wild_cards_used_num)])
+        self.game.train_card_manager.add_to_discard_pile([cards_color for _ in range(color_cards_used_num)])
+        self.game.train_card_manager.add_to_discard_pile(['wild' for _ in range(wild_cards_used_num)])
         self.play_num_trains(route_dist)
-        self.add_points(self.game_instance.get_route_value(route_dist))
-        self.player_board.add_edge(city1, city2, route_dist, cards_color)
+        self.add_points(self.game.get_route_value(route_dist))
         self.check_completed_tickets()
 
         self.adapter.set_trains_num(self.player_id, self.trains_remaining)
@@ -227,7 +225,7 @@ class BasePlayer:
 
     def check_completed_tickets(self) -> None:
         for ticket, completed in self.tickets.items():
-            if not completed and self.player_board.is_ticket_completed(ticket):
+            if not completed and self.game.board.is_ticket_completed(self.color, ticket):
                 logger.info('TICKET_COMPLETED!')
                 self.complete_ticket(ticket)
 
@@ -240,23 +238,26 @@ class BasePlayer:
         else:
             self.adapter.set_color_cards_num(self.player_id, card, self.hand[card])
 
-    def choose_tickets(self, min_keep: int, tickets: List[tuple]) -> Tuple[List[int], List[int]]:
-        raise NotImplementedError
+    @abstractmethod
+    def decide_tickets(self, min_keep: int, tickets: List[Ticket]) -> Tuple[List[int], List[int]]:
+        pass
 
+    @abstractmethod
     def decide_route(self) -> int:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def decide_cards_color(self) -> int:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def decide_train_card(self) -> int:
-        raise NotImplementedError
+        pass
 
-    def decide_ticket(self) -> int:
-        raise NotImplementedError
-
+    @abstractmethod
     def decide_action(self) -> int:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def decide_wild_cards(self) -> int:
-        raise NotImplementedError
+        pass

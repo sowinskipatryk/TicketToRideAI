@@ -25,7 +25,7 @@ def load_network():
 
 
 def eval_genomes(genomes, config):
-    from game_logic.game import Game
+    from game.core import Game
 
     for i in range(0, len(genomes), PLAYERS_NUM):
         networks = []
