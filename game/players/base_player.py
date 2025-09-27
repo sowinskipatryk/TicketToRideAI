@@ -1,33 +1,27 @@
-import collections
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import List, Tuple, Dict, TYPE_CHECKING
-
-from neat.nn import FeedForwardNetwork
 
 from game.enums import ActionDecision
 from game.enums import TrainCardDecision, PlayerColor
+from game.ticket_deck import Ticket
 from game.game_logger import logger
 from network.adapters.base_adapter import BaseAdapter
-from game.ticket_deck import Ticket
 
 if TYPE_CHECKING:
     from game.core import Game
 
 
 class BasePlayer(ABC):
-    PLAYER_COLORS = list(PlayerColor)
-
-    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter,
-                 network: FeedForwardNetwork = None) -> None:
+    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter) -> None:
         self.player_id = color_index
         self.game = game
-        self.color = self.PLAYER_COLORS[color_index]
+        self.color = PlayerColor.from_index(color_index)
         self.tickets = {}
-        self.hand = collections.defaultdict(int)
+        self.hand = defaultdict(int)
         self.score = 0
         self.trains_remaining = self.game.config.NUM_TRAIN_FIGURES
         self.longest_path = False
-        self.network = network
         self.adapter = adapter
 
         self.set_trains_num_adapter()
@@ -118,7 +112,7 @@ class BasePlayer(ABC):
         return self.hand
 
     def get_color(self) -> str:
-        return self.color
+        return str(self.color)
 
     def set_longest_path(self) -> None:
         self.longest_path = True

@@ -27,6 +27,10 @@ class PlayerColor(Enum):
     YELLOW = 'yellow'
     BLACK = 'black'
 
+    @classmethod
+    def from_index(cls, idx: int) -> "PlayerColor":
+        return list(cls)[idx]
+
 
 class ActionDecision(Enum):
     CLAIM_ROUTE = 0

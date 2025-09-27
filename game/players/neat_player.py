@@ -1,11 +1,18 @@
 import math
 
+from neat.nn import FeedForwardNetwork
+
 from game.game_logger import logger
 from game.players.base_player import BasePlayer
+from network.adapters.base_adapter import BaseAdapter
 from network.decisions import NetworkDecisions
 
 
 class NEATPlayer(BasePlayer):
+    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter, network: FeedForwardNetwork = None):
+        super().__init__(color_index, game, adapter)
+        self.network = network
+
     def decide_route(self):
         decisions_array = self.get_decision_array()
         logger.debug(f'route values: {decisions_array[NetworkDecisions.ROUTE_DECISION_ID:NetworkDecisions.COLOR_DECISION_ID]}')
