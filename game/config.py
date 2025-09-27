@@ -1,3 +1,6 @@
+from game.enums import GameVersion
+
+
 class BaseConfig:
     NUM_TICKETS_DEALT = 3
     MIN_TICKETS_KEPT = 1
@@ -29,3 +32,21 @@ class EuropeConfig(BaseConfig):
 class NordicConfig(BaseConfig):
     WILD_CARD_RESTRICTION = False
     GLOBETROTTER_BONUS = 10
+
+
+class ConfigFactory:
+    @staticmethod
+    def create(version: str) -> BaseConfig:
+        try:
+            game_version = GameVersion(version)
+        except ValueError:
+            raise ValueError("Invalid game version. Choose from: USA, Europe, Nordic")
+
+        config_map = {
+            GameVersion.USA: USAConfig,
+            GameVersion.EUROPE: EuropeConfig,
+            GameVersion.NORDIC: NordicConfig,
+            }
+
+        config_class = config_map.get(game_version)
+        return config_class()

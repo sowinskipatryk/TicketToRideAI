@@ -6,14 +6,14 @@ from game.enums import ActionDecision
 from game.enums import TrainCardDecision, PlayerColor
 from game.ticket_deck import Ticket
 from game.game_logger import logger
-from network.adapters.base_adapter import BaseAdapter
+from network.adapters.blank_adapter import BlankAdapter
 
 if TYPE_CHECKING:
     from game.core import Game
 
 
 class BasePlayer(ABC):
-    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter) -> None:
+    def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter) -> None:
         self.player_id = color_index
         self.game = game
         self.color = PlayerColor.from_index(color_index)

@@ -4,12 +4,12 @@ from neat.nn import FeedForwardNetwork
 
 from game.game_logger import logger
 from game.players.base_player import BasePlayer
-from network.adapters.base_adapter import BaseAdapter
+from network.adapters.blank_adapter import BlankAdapter
 from network.decisions import NetworkDecisions
 
 
 class NEATPlayer(BasePlayer):
-    def __init__(self, color_index: int, game: 'Game', adapter: BaseAdapter, network: FeedForwardNetwork = None):
+    def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter, network: FeedForwardNetwork = None):
         super().__init__(color_index, game, adapter)
         self.network = network
 

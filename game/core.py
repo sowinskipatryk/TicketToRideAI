@@ -10,7 +10,7 @@ from game.players.base_player import BasePlayer
 from game.game_board import GameBoard
 from game.ticket_deck import TicketDeck, Ticket
 from game.train_card_manager import TrainCardManager
-from game.config_factory import ConfigFactory
+from game.config import ConfigFactory
 
 
 class Game:
@@ -23,8 +23,7 @@ class Game:
         if not self.MIN_PLAYERS <= self.players_num <= self.MAX_PLAYERS:
             raise ValueError(f'This game is designed for {self.MIN_PLAYERS}-{self.MAX_PLAYERS} players.')
 
-        self.config_factory = ConfigFactory()
-        self.config = self.config_factory.get_config(version)
+        self.config = ConfigFactory.create(version)
         self.version = version
 
         self.game_state = GameState.INIT

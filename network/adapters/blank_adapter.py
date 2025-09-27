@@ -1,4 +1,4 @@
-class BaseAdapter:
+class BlankAdapter:
     def __init__(self):
         self.state_array = []
 

@@ -9,7 +9,7 @@ from game.players.human_player import HumanPlayer
 from game.players.random_player import RandomPlayer
 
 from network.manager import load_network
-from network.adapters.base_adapter import BaseAdapter
+from network.adapters.blank_adapter import BlankAdapter
 from network.adapters.network_adapter import NetworkAdapter
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class PlayerFactory:
-    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BaseAdapter]:
+    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BlankAdapter]:
         adapter = self.determine_adapter(player_types, game)
         players = []
         for index, player_type in enumerate(player_types):
@@ -27,18 +27,18 @@ class PlayerFactory:
         return players, adapter
 
     @staticmethod
-    def determine_adapter(player_types: List[str], game: 'Game') -> BaseAdapter:
+    def determine_adapter(player_types: List[str], game: 'Game') -> BlankAdapter:
         if any(player_type == PlayerType.NEAT.value for player_type in player_types):
             return NetworkAdapter(game)
         else:
-            return BaseAdapter()
+            return BlankAdapter()
 
     @staticmethod
-    def create_player(index: int, type_: str, game, adapter: BaseAdapter, network: FeedForwardNetwork) -> BasePlayer:
+    def create_player(index: int, type_: str, game, adapter: BlankAdapter, network: FeedForwardNetwork) -> BasePlayer:
         try:
             player_type = PlayerType(type_)
         except ValueError:
-            raise ValueError(f"Invalid player type {type_}. Choose from: Human, AI, Random")
+            raise ValueError(f"Invalid player type {type_}. Choose from: Human, NEAT, Random")
 
         player_types = {
             PlayerType.NEAT: NEATPlayer,

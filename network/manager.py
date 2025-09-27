@@ -33,7 +33,7 @@ def eval_genomes(genomes, config):
             genome_id, genome = genomes[i + j]
             networks.append(neat.nn.FeedForwardNetwork.create(genome, config))
 
-        game = Game(player_types=['AI'] * PLAYERS_NUM, version=GAME_VERSION, networks=networks)
+        game = Game(player_types=['NEAT'] * PLAYERS_NUM, version=GAME_VERSION, networks=networks)
         stats = game.play(max_moves=1_000)
 
         for j in range(4):

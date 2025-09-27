@@ -1,8 +1,8 @@
 from game.game_logger import logger
-from network.adapters.base_adapter import BaseAdapter
+from network.adapters.blank_adapter import BlankAdapter
 
 
-class NetworkAdapter(BaseAdapter):
+class NetworkAdapter(BlankAdapter):
     """
     Common values:
     - one-hot face-up cards x (8 colors + wild card) (5x9=45)
