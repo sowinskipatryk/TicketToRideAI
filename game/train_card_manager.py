@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 class TrainCardManager:
     WILD_CARD = 'wild'
 
-    def __init__(self, game_instance: 'Game') -> None:
-        self.game_instance = game_instance
+    def __init__(self, game: 'Game') -> None:
+        self.game = game
 
         self._draw_pile = self._create_draw_pile()
         self.set_draw_pile_num_adapter()
@@ -23,8 +23,8 @@ class TrainCardManager:
         self.fill_face_up()
 
     def _create_draw_pile(self) -> List[str]:
-        deck = [x for x in self.game_instance.config.TRAIN_COLORS for _ in range(self.game_instance.config.NUM_TRAIN_CARDS_PER_COLOR)]
-        deck += [self.WILD_CARD for _ in range(self.game_instance.config.NUM_WILD_CARDS)]
+        deck = [x for x in self.game.config.TRAIN_COLORS for _ in range(self.game.config.NUM_TRAIN_CARDS_PER_COLOR)]
+        deck += [self.WILD_CARD for _ in range(self.game.config.NUM_WILD_CARDS)]
         random.shuffle(deck)
         return deck
 
@@ -63,7 +63,7 @@ class TrainCardManager:
         logger.debug(f'before {self._face_up_cards}')
         self.get_state()
         tries = 0
-        while self.get_face_up_cards_num() < self.game_instance.config.NUM_FACE_UP_CARDS:
+        while self.get_face_up_cards_num() < self.game.config.NUM_FACE_UP_CARDS:
             closest_none_id = self._face_up_cards.index(None)
             card = self.pick_draw_pile_card()
             if card is None:
@@ -74,7 +74,7 @@ class TrainCardManager:
                 self._face_up_cards[closest_none_id] = card
                 self.set_face_up_card_adapter(closest_none_id, card)
 
-            if self._face_up_cards.count(self.WILD_CARD) >= self.game_instance.config.MAX_WILD_CARDS and tries < 5:
+            if self._face_up_cards.count(self.WILD_CARD) >= self.game.config.MAX_WILD_CARDS and tries < 5:
                 logger.debug('Too many wild cards on the table. Discarding face up cards...')
                 cards = [card for card in self._face_up_cards if card is not None]
                 self.add_to_discard_pile(cards)
@@ -110,16 +110,16 @@ class TrainCardManager:
         logger.debug(f'face_up: {len(self._face_up_cards)} draw: {len(self._draw_pile)} discard: {len(self._discard_pile)}')
 
     def set_draw_pile_num_adapter(self):
-        self.game_instance.adapter.set_draw_pile_num(len(self._draw_pile))
+        self.game.adapter.set_draw_pile_num(len(self._draw_pile))
 
     def set_discard_pile_num_adapter(self):
-        self.game_instance.adapter.set_discard_pile_num(len(self._discard_pile))
+        self.game.adapter.set_discard_pile_num(len(self._discard_pile))
 
     def set_face_up_card_adapter(self, card_id, card):
         if card == self.WILD_CARD:
-            color_id = len(self.game_instance.config.TRAIN_COLORS)
+            color_id = len(self.game.config.TRAIN_COLORS)
         elif card is None:
-            color_id = len(self.game_instance.config.TRAIN_COLORS) + 1
+            color_id = len(self.game.config.TRAIN_COLORS) + 1
         else:
-            color_id = self.game_instance.config.TRAIN_COLORS.index(card)
-        self.game_instance.adapter.set_face_up_card(card_id, color_id)
+            color_id = self.game.config.TRAIN_COLORS.index(card)
+        self.game.adapter.set_face_up_card(card_id, color_id)

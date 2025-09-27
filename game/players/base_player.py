@@ -32,12 +32,13 @@ class BasePlayer(ABC):
     def play_turn(self) -> bool:
         action_id = self.decide_action()
         action = ActionDecision(action_id)
+
         logger.info(f'play_turn: {action}')
+
         if action == ActionDecision.CLAIM_ROUTE:
             move_completed = self.claim_route()
         elif action == ActionDecision.DRAW_TICKETS:
-            move_completed = self.draw_tickets(self.game.config.NUM_TICKETS_DEALT,
-                                               self.game.config.MIN_TICKETS_KEPT)
+            move_completed = self.draw_tickets(self.game.config.NUM_TICKETS_DEALT, self.game.config.MIN_TICKETS_KEPT)
         elif action == ActionDecision.DRAW_CARDS:
             move_completed = self.draw_train_cards(self.game.config.NUM_TRAIN_CARDS_DEALT)
         elif action == ActionDecision.SKIP:

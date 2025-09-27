@@ -17,24 +17,24 @@ if TYPE_CHECKING:
 
 
 class PlayerFactory:
-    def create_players(self, player_types: List[str], game_instance: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BaseAdapter]:
-        adapter = self.determine_adapter(player_types, game_instance)
+    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BaseAdapter]:
+        adapter = self.determine_adapter(player_types, game)
         players = []
         for index, player_type in enumerate(player_types):
             network = networks[index] if networks else None
-            player = self.create_player(index, player_type, game_instance, adapter, network)
+            player = self.create_player(index, player_type, game, adapter, network)
             players.append(player)
         return players, adapter
 
     @staticmethod
-    def determine_adapter(player_types: List[str], game_instance: 'Game') -> BaseAdapter:
+    def determine_adapter(player_types: List[str], game: 'Game') -> BaseAdapter:
         if any(player_type == PlayerType.NEAT.value for player_type in player_types):
-            return NetworkAdapter(game_instance)
+            return NetworkAdapter(game)
         else:
             return BaseAdapter()
 
     @staticmethod
-    def create_player(index: int, type_: str, game_instance, adapter: BaseAdapter, network: FeedForwardNetwork) -> BasePlayer:
+    def create_player(index: int, type_: str, game, adapter: BaseAdapter, network: FeedForwardNetwork) -> BasePlayer:
         try:
             player_type = PlayerType(type_)
         except ValueError:
@@ -51,6 +51,6 @@ class PlayerFactory:
         if player_type == PlayerType.NEAT:
             if network is None:
                 network = load_network()
-            return player_class(index, game_instance, adapter, network)
+            return player_class(index, game, adapter, network)
 
-        return player_class(index, game_instance, adapter)
+        return player_class(index, game, adapter)

@@ -1,8 +1,8 @@
 class GameStats:
-    def __init__(self, game_instance):
-        self.game_instance = game_instance
-        self.invalid_moves = [0] * self.game_instance.players_num
-        self.completed_moves = [0] * self.game_instance.players_num
+    def __init__(self, game):
+        self.game = game
+        self.invalid_moves = [0] * self.game.players_num
+        self.completed_moves = [0] * self.game.players_num
 
     def add_invalid_move(self, player_id):
         self.invalid_moves[player_id] += 1
