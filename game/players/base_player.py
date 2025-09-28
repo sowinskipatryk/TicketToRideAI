@@ -61,15 +61,10 @@ class BasePlayer(ABC):
 
     def score_tickets(self) -> None:
         for ticket, completed in self.tickets.items():
-            ticket_value = self.get_ticket_value(ticket)
             if completed:
-                self.add_points(ticket_value)
+                self.add_points(ticket.points)
             else:
-                self.subtract_points(ticket_value)
-
-    @staticmethod
-    def get_ticket_value(ticket: Ticket) -> int:
-        return ticket.points
+                self.subtract_points(ticket.points)
 
     def add_cards_to_hand(self, cards: str | List[str]) -> None:
         logger.debug(f'add_cards_to_hand: {cards}')
