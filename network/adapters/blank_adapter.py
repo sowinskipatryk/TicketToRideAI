@@ -33,4 +33,4 @@ class BlankAdapter:
         pass
 
     def get_state_array(self, player_id):
-        pass
+        return []

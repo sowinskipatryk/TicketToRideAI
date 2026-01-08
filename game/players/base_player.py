@@ -44,7 +44,7 @@ class BasePlayer(ABC):
         elif action == ActionDecision.SKIP:
             move_completed = True
         else:
-            raise Exception("Invalid action")
+            raise ValueError(f"Invalid action: {action} (action_id: {action_id})")
         if move_completed:
             logger.debug(f'move_completed')
         return move_completed

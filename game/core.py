@@ -154,7 +154,7 @@ class Game:
                                 reverse=True)
         self.winner = sorted_players[0]
         logger.info(f'{self.winner} wins!')
-        logger.info('winner tickets:', self.winner.tickets)
+        logger.info(f'winner tickets: {self.winner.tickets}')
         # self.game_manager.board.draw_possession_graph()
 
     def log_game_state(self):
