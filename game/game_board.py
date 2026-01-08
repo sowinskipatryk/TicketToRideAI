@@ -55,7 +55,7 @@ class GameBoard:
             if data['link_id'] == link_id:
                 return data['claimed_by']
 
-    def validate_route(self, player, data):
+    def validate_route(self, player, data) -> bool:
         owners = self.get_route_owners(data['route_id'])
 
         if not any(owners):
@@ -63,16 +63,17 @@ class GameBoard:
 
         if player in owners:
             logger.info('You already claimed one link for this route!')
-            return
+            return False
 
         if all(owners):
             logger.info('All links are claimed for this route!')
-            return
+            return False
 
         if not self.game.config.WILD_CARD_RESTRICTION or self.game.players_num > 3:
             return True
 
         logger.info('You can only claim one link for each route in this game configuration!')
+        return False
 
     def get_route_data(self, link_id: int) -> Tuple[str, str, Dict[str, Union[bool, str, int]]]:
         for u, v, data in self.G.edges(data=True):
