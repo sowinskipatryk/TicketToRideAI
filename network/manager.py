@@ -36,7 +36,7 @@ def eval_genomes(genomes, config):
         game = Game(player_types=['NEAT'] * PLAYERS_NUM, version=GAME_VERSION, networks=networks)
         stats = game.play(max_moves=1_000)
 
-        for j in range(4):
+        for j in range(PLAYERS_NUM):
             genome_id, genome = genomes[i + j]
             genome.fitness = stats['score'][j]
             print(f"Game {i // PLAYERS_NUM}, Player {j}, Genome {genome_id}, Fitness: {genome.fitness}")
