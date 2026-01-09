@@ -12,7 +12,17 @@ if TYPE_CHECKING:
 
 
 class GameBoard:
+    """Manages the game board, routes, and path calculations.
+    
+    Uses NetworkX to represent the board as a graph and handles route
+    claiming, validation, and path finding operations.
+    """
     def __init__(self, game: 'Game'):
+        """Initialize the game board.
+        
+        Args:
+            game: Reference to the Game instance
+        """
         self.game = game
         self.routes = load_routes(self.game.version)
         self.cities = load_cities(self.game.version)
@@ -37,9 +47,20 @@ class GameBoard:
                 link_id += 1
 
     def claim_route(self, link_id: int, player_color: str) -> bool:
+        """Claim a route for a player.
+        
+        Args:
+            link_id: The link ID of the route to claim
+            player_color: The color of the player claiming the route
+            
+        Returns:
+            True if route was successfully claimed, False otherwise
+        """
         for u, v, data in self.G.edges(data=True):
             if data['link_id'] == link_id:
                 data['claimed_by'] = player_color
+                # Invalidate cache when route is claimed
+                self.invalidate_path_cache()
                 return True
         return False
 
@@ -56,6 +77,15 @@ class GameBoard:
                 return data['claimed_by']
 
     def validate_route(self, player, data) -> bool:
+        """Validate if a player can claim a route.
+        
+        Args:
+            player: Player color attempting to claim the route
+            data: Route data dictionary containing route_id
+            
+        Returns:
+            True if route can be claimed, False otherwise
+        """
         owners = self.get_route_owners(data['route_id'])
 
         if not any(owners):
@@ -88,12 +118,43 @@ class GameBoard:
         return G
 
     def is_ticket_completed(self, player_color, ticket) -> bool:
+        """Check if a player has completed a destination ticket.
+        
+        Args:
+            player_color: Color of the player to check
+            ticket: Ticket object with city_from and city_to
+            
+        Returns:
+            True if there's a path between the ticket cities, False otherwise
+        """
         G = self.player_subgraph(player_color)
         if ticket.city_from not in G or ticket.city_to not in G:
             return False
         return nx.has_path(G, ticket.city_from, ticket.city_to)
 
     def calculate_longest_path(self, player_color) -> int:
+        """Calculate the longest continuous path for a player.
+        
+        Uses depth-first search to find the longest path. Results are cached
+        per player to avoid redundant calculations.
+        
+        Args:
+            player_color: The color of the player to calculate path for
+            
+        Returns:
+            The length of the longest path
+        """
+        # Cache key for this player's subgraph
+        # Use a hash of claimed routes to invalidate cache when board changes
+        cache_key = (player_color, self._get_board_state_hash())
+        
+        # Check cache (simple in-memory cache per game instance)
+        if not hasattr(self, '_longest_path_cache'):
+            self._longest_path_cache = {}
+        
+        if cache_key in self._longest_path_cache:
+            return self._longest_path_cache[cache_key]
+        
         G = self.player_subgraph(player_color)
 
         def dfs(node, visited_edges):
@@ -111,7 +172,29 @@ class GameBoard:
         longest = 0
         for node in G.nodes:
             longest = max(longest, dfs(node, set()))
+        
+        # Cache the result
+        self._longest_path_cache[cache_key] = longest
         return longest
+    
+    def _get_board_state_hash(self) -> int:
+        """Get a hash of the current board state for cache invalidation.
+        
+        Returns:
+            Hash value representing current board state
+        """
+        # Create a simple hash based on claimed routes
+        claimed_routes = tuple(
+            sorted((u, v, data.get('claimed_by'))
+                  for u, v, data in self.G.edges(data=True)
+                  if data.get('claimed_by') is not None)
+        )
+        return hash(claimed_routes)
+    
+    def invalidate_path_cache(self):
+        """Invalidate the longest path cache (call when routes are claimed)."""
+        if hasattr(self, '_longest_path_cache'):
+            self._longest_path_cache.clear()
 
     def count_claimed_routes(self, player_color) -> int:
         G = self.player_subgraph(player_color)

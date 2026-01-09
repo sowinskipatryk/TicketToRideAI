@@ -4,7 +4,6 @@ from neat.nn.feed_forward import FeedForwardNetwork
 
 from game.game_logger import logger
 from game.enums import GameState
-from game.game_stats import GameStats
 from game.player_factory import PlayerFactory
 from game.players.base_player import BasePlayer
 from game.game_board import GameBoard
@@ -14,10 +13,26 @@ from game.config import ConfigFactory
 
 
 class Game:
+    """Main game class that manages game state and turn flow.
+    
+    Handles player turns, route claiming, card drawing, ticket management,
+    and game completion logic.
+    """
     MIN_PLAYERS = 2
     MAX_PLAYERS = 5
 
-    def __init__(self, player_types: List[str], version: str, networks: List[FeedForwardNetwork] = None) -> None:
+    def __init__(self, player_types: List[str], version: str, networks: List[FeedForwardNetwork] = None, ui_interface=None) -> None:
+        """Initialize a new game.
+        
+        Args:
+            player_types: List of player type strings ('Human', 'NEAT', 'Random')
+            version: Game version ('USA', 'Europe', 'Nordic')
+            networks: Optional list of NEAT networks for NEAT players
+            ui_interface: Optional UI interface for human players (GUI or CLI)
+            
+        Raises:
+            ValueError: If player count is invalid or version is unsupported
+        """
         self.players_num = len(player_types)
 
         if not self.MIN_PLAYERS <= self.players_num <= self.MAX_PLAYERS:
@@ -33,7 +48,7 @@ class Game:
         self.ticket_deck = TicketDeck(self)
 
         self.player_factory = PlayerFactory()
-        self.players, self.adapter = self.player_factory.create_players(player_types, self, networks)
+        self.players, self.adapter = self.player_factory.create_players(player_types, self, networks, ui_interface=ui_interface)
 
         self.train_card_manager = TrainCardManager(self)
 
@@ -42,8 +57,8 @@ class Game:
         self.last_player = None
         self.winner = None
 
-        self.game_stats = GameStats(self)
-
+        # Game statistics dictionary - tracks move counts and game results
+        # Note: GameStats class exists but is currently unused; stats are tracked directly here
         self.stats = {"invalid_moves": [0 for _ in range(self.players_num)],
                       "completed_moves": [0 for _ in range(self.players_num)],
                       "total_moves": [0 for _ in range(self.players_num)]}
@@ -61,6 +76,24 @@ class Game:
         return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES
 
     def play(self, max_moves: int = 0) -> Dict:
+        """Run the game until completion.
+        
+        Args:
+            max_moves: Maximum number of moves before stopping (0 = no limit)
+            
+        Returns:
+            Dictionary containing game statistics:
+            - invalid_moves: List of invalid move counts per player
+            - completed_moves: List of completed move counts per player
+            - total_moves: List of total move counts per player
+            - completed_tickets: List of completed ticket counts per player
+            - total_tickets: List of total ticket counts per player
+            - trains_remaining: List of remaining train counts per player
+            - longest_path_owner: List of longest path flags per player
+            - score: List of final scores per player
+            - claimed_routes: List of claimed route counts per player
+            - longest_path_length: List of longest path lengths (if applicable)
+        """
         self.ticket_deck.set_ticket_pile_num_adapter()
         self.game_state = GameState.RUNNING
         logger.info(self.game_state)
@@ -148,6 +181,11 @@ class Game:
             player.add_points(self.config.LONGEST_ROUTE_BONUS)
 
     def determine_winner(self) -> None:
+        """Determine the game winner based on score, ticket values, and longest path.
+        
+        Sets self.winner to the player with the highest score. In case of ties,
+        uses ticket values and longest path as tiebreakers.
+        """
         sorted_players = sorted(self.players,
                                 key=lambda player: (player.get_score(), sum(player.get_ticket_values()),
                                                     player.longest_path),
@@ -155,7 +193,6 @@ class Game:
         self.winner = sorted_players[0]
         logger.info(f'{self.winner} wins!')
         logger.info(f'winner tickets: {self.winner.tickets}')
-        # self.game_manager.board.draw_possession_graph()
 
     def log_game_state(self):
         # logger.debug(f'face up pile: {self.game_manager.train_card_manager.get_face_up_cards()}')

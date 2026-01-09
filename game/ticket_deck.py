@@ -14,12 +14,23 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Ticket:
+    """Represents a destination ticket.
+    
+    Attributes:
+        city_from: Starting city name
+        city_to: Destination city name
+        points: Point value for completing this ticket
+    """
     city_from: str
     city_to: str
     points: int
 
 
 class TicketDeck:
+    """Manages the deck of destination tickets.
+    
+    Handles ticket distribution, shuffling, and deck management.
+    """
     def __init__(self, game: 'Game') -> None:
         self.game = game
         raw_tickets = load_tickets(self.game.version)

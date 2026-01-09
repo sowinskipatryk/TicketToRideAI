@@ -1,0 +1,23 @@
+# TicketToRideAI Configuration File
+
+# NEAT Training Configuration
+neat:
+  players_num: 4
+  game_version: "USA"  # Options: USA, Europe, Nordic
+  num_generations: 20
+  max_moves_per_game: 1000
+  config_filename: "network/neat_config.txt"
+  genome_filename: "best_genome.pkl"
+
+# Logging Configuration
+logging:
+  console_level: "DEBUG"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file_level: "ERROR"     # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_file: "game.log"
+
+# Game Configuration
+game:
+  default_version: "USA"  # Options: USA, Europe, Nordic
+  min_players: 2
+  max_players: 5
+

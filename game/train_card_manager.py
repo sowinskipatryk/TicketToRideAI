@@ -8,9 +8,19 @@ if TYPE_CHECKING:
 
 
 class TrainCardManager:
+    """Manages train card decks, face-up cards, and card distribution.
+    
+    Handles drawing, discarding, and maintaining face-up card display
+    with wild card restrictions.
+    """
     WILD_CARD = 'wild'
 
     def __init__(self, game: 'Game') -> None:
+        """Initialize the train card manager.
+        
+        Args:
+            game: Reference to the Game instance
+        """
         self.game = game
 
         self._draw_pile = self._create_draw_pile()
@@ -20,6 +30,7 @@ class TrainCardManager:
         self.set_discard_pile_num_adapter()
 
         self._face_up_cards = [None] * 5
+        self._wild_card_count = 0  # Track wild cards in face-up pile for efficiency
         self.fill_face_up()
 
     def _create_draw_pile(self) -> List[str]:
@@ -42,14 +53,17 @@ class TrainCardManager:
             card = self._face_up_cards[card_id]
             logger.debug(f'pick_face_up: {card}')
             if card is None:
-                return
+                return None
             self._face_up_cards[card_id] = None
+            if card == self.WILD_CARD:
+                self._wild_card_count -= 1
             self.set_face_up_card_adapter(card_id, None)
 
             self.fill_face_up()
             return card
+        return None
 
-    def pick_draw_pile_card(self) -> str:
+    def pick_draw_pile_card(self) -> Optional[str]:
         if len(self._draw_pile) == 0:
             self.fill_draw_pile()
 
@@ -57,6 +71,7 @@ class TrainCardManager:
             card = self._draw_pile.pop()
             self.set_draw_pile_num_adapter()
             return card
+        return None
 
     def fill_face_up(self) -> None:
         logger.debug('fill_face_up')
@@ -70,15 +85,17 @@ class TrainCardManager:
                 logger.debug(f'Draw pile is empty!')
                 break
             else:
-                # logger.debug(f'{card} picked from draw pile')
                 self._face_up_cards[closest_none_id] = card
+                if card == self.WILD_CARD:
+                    self._wild_card_count += 1
                 self.set_face_up_card_adapter(closest_none_id, card)
 
-            if self._face_up_cards.count(self.WILD_CARD) >= self.game.config.MAX_WILD_CARDS and tries < 5:
+            if self._wild_card_count >= self.game.config.MAX_WILD_CARDS and tries < 5:
                 logger.debug('Too many wild cards on the table. Discarding face up cards...')
                 cards = [card for card in self._face_up_cards if card is not None]
                 self.add_to_discard_pile(cards)
                 self._face_up_cards = [None] * 5
+                self._wild_card_count = 0
                 tries += 1
         logger.debug(f'after {self._face_up_cards}')
         self.get_state()

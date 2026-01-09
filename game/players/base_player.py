@@ -13,7 +13,19 @@ if TYPE_CHECKING:
 
 
 class BasePlayer(ABC):
+    """Base class for all player types.
+    
+    Defines the interface and common functionality for players.
+    Subclasses must implement decision-making methods.
+    """
     def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter) -> None:
+        """Initialize a player.
+        
+        Args:
+            color_index: Index determining player color
+            game: Reference to the Game instance
+            adapter: Adapter for state management (network or blank)
+        """
         self.player_id = color_index
         self.game = game
         self.color = PlayerColor.from_index(color_index)
@@ -30,6 +42,11 @@ class BasePlayer(ABC):
         return str(self.color)
 
     def play_turn(self) -> bool:
+        """Execute a player's turn.
+        
+        Returns:
+            True if the turn was completed successfully, False if the move was invalid
+        """
         action_id = self.decide_action()
         action = ActionDecision(action_id)
 

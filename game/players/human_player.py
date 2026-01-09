@@ -1,126 +1,103 @@
+"""Human player that uses CLI or GUI based on context."""
 from game.players.base_player import BasePlayer
-from typing import List
+from typing import List, Optional
 from game.ticket_deck import Ticket
 
 
 class HumanPlayer(BasePlayer):
-    def decide_tickets(self, min_keep, tickets: List[Ticket]):
-        while True:
-            print("Choose tickets you intend to keep (separated by commas):")
-            for i, ticket in enumerate(tickets):
-                print(f"[{i + 1}] Ticket {ticket.city_from} - {ticket.city_to} ({ticket.points})")
-            self.print_state_instructions()
-            decision = input("Enter your choice: ")
-            if self.check_state_instructions(decision):
-                continue
-            ticket_choices = decision.split(',')
-            if len(ticket_choices) >= min_keep and all(choice.strip().isdigit() for choice in ticket_choices):
-                chosen_ticket_ids = [int(i.strip()) - 1 for i in ticket_choices]
-                discarded_ticket_ids = [i for i in range(len(tickets)) if i not in chosen_ticket_ids]
-                return chosen_ticket_ids, discarded_ticket_ids
-            else:
-                print(f"Invalid choice. Please enter at least {min_keep} ticket number(s) separated by commas (e.g. 1,2,3)")
-
-    def decide_action(self):
-        while True:
-            print("Choose an action:")
-            print("[1] Claim a route")
-            print("[2] Draw tickets")
-            print("[3] Draw train cards")
-            self.print_state_instructions()
-            choice = input("Enter your choice: ")
-            if self.check_state_instructions(choice):
-                continue
-            elif choice in ['1', '2', '3']:
-                return int(choice) - 1
-            else:
-                print("Invalid choice.")
-
+    """Human player that can work with CLI or GUI.
+    
+    When used in GUI mode, decision methods will be called by the GUI controller.
+    When used in CLI mode, it uses CLI interface.
+    """
+    
+    def __init__(self, color_index: int, game: 'Game', adapter, ui_interface=None):
+        """Initialize human player.
+        
+        Args:
+            color_index: Player color index
+            game: Game instance
+            adapter: Network adapter
+            ui_interface: Optional UI interface (CLI or GUI). If None, detects automatically.
+        """
+        super().__init__(color_index, game, adapter)
+        self.ui_interface = ui_interface
+        self._pending_ticket_decision = None  # For GUI ticket selection
+    
+    def decide_tickets(self, min_keep: int, tickets: List[Ticket]):
+        """Get ticket selection from human player.
+        
+        Args:
+            min_keep: Minimum number of tickets to keep
+            tickets: List of tickets to choose from
+            
+        Returns:
+            Tuple[List[int], List[int]]: (kept_ticket_indices, discarded_ticket_indices)
+        """
+        # If GUI interface is set, wait for GUI decision
+        if self.ui_interface and hasattr(self.ui_interface, 'request_ticket_selection'):
+            return self.ui_interface.request_ticket_selection(self, min_keep, tickets)
+        
+        # Otherwise use CLI
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_tickets(min_keep, tickets, self.game)
+        except ImportError:
+            # Fallback: keep minimum required tickets
+            return list(range(min_keep)), list(range(min_keep, len(tickets)))
+    
+    def decide_action(self) -> int:
+        """Get action decision from human player."""
+        # GUI handles this through action panel, CLI uses input
+        if self.ui_interface and hasattr(self.ui_interface, 'request_action'):
+            return self.ui_interface.request_action(self)
+        
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_action(self.game)
+        except ImportError:
+            return 3  # Skip as fallback
+    
     def decide_wild_cards(self) -> int:
-        while True:
-            wild_cards = input(f"How many wild cards do you wish to use: ")
-            if wild_cards.isdigit() and 0 <= int(wild_cards) <= self.game.config.NUM_WILD_CARDS:
-                return int(wild_cards)
-            else:
-                print("Invalid choice. Please enter the number of wild cards that you wish to use to claim the route.")
-
+        """Get wild card count from human player."""
+        if self.ui_interface and hasattr(self.ui_interface, 'request_wild_cards'):
+            return self.ui_interface.request_wild_cards(self)
+        
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_wild_cards(self.game)
+        except ImportError:
+            return 0
+    
     def decide_cards_color(self) -> int:
-        while True:
-            print(self.hand)
-            train_color = input("Which train color do you wish to use to claim a route: ")
-            if train_color in self.game.config.TRAIN_COLORS:
-                return self.game.config.TRAIN_COLORS.index(train_color)
-            else:
-                print(f"Invalid choice. Please enter one of these train colors: {self.game.config.TRAIN_COLORS}")
-
-    def decide_train_card(self):
-        face_up_cards = self.game.train_card_manager.get_face_up_cards()
-        while True:
-            print("Choose an action:")
-            for i, card in enumerate(face_up_cards):
-                print(f"[{i + 1}] Choose revealed card: {card}")
-            print("[6] Draw a card from the deck")
-            self.print_state_instructions()
-            chosen_train_card = input("Enter the index of the train card you want to take: ")
-            if self.check_state_instructions(chosen_train_card):
-                continue
-            elif chosen_train_card.isdigit():
-                chosen_action_index = int(chosen_train_card)
-                allowed_decisions = list(range(1, len(face_up_cards) + 1)) + [6]
-                if chosen_action_index in allowed_decisions:
-                    return chosen_action_index - 1
-            print("Invalid choice! Please enter a number from 1 to 6 based on the action you intend to take")
-
-    def decide_route(self):
-        while True:
-            self.print_state_instructions()
-            num_routes = self.game.board.get_route_links_num()
-            route_decision = input("Enter the route id: ")
-            if self.check_state_instructions(route_decision):
-                continue
-            elif route_decision.isdigit() and 0 <= int(route_decision) <= num_routes:
-                return int(route_decision)
-            else:
-                print(f"Invalid choice. Please enter route id from 0 to {self.game.board.get_route_links_num()}")
-
-    def print_hand(self):
-        print(f'{self} hand')
-        for k, v in self.hand.items():
-            print(f'{k}: {v}')
-
-    def print_tickets(self):
-        print(f'{self} tickets')
-        for k, v in self.tickets.items():
-            print(f"{k.city_from} -> {k.city_to} ({k.points}) : {'finished' if v else 'not finished'}")
-
-    @staticmethod
-    def graph_time_decision(function):
-        while True:
-            graph_decision = input("How long should the map be shown on the screen (0-60 seconds): ")
-            if graph_decision.isdigit() and 0 <= int(graph_decision) <= 60:
-                function(int(graph_decision))
-                break
-            else:
-                print(f"Invalid choice. Please enter number from 0 to 60")
-
-    @staticmethod
-    def print_state_instructions():
-        print("or choose one of the state options:")
-        print("[p] Show possession graph")
-        print("[m] Show moves graph")
-        print("[h] Show player's hand")
-        print("[t] Show player's tickets")
-
-    def check_state_instructions(self, choice):
-        if choice == 'p':
-            self.graph_time_decision(self.game.board.draw_possession_graph)
-            return True
-        elif choice == 'm':
-            self.graph_time_decision(self.game.board.draw_available_moves_graph)
-            return True
-        elif choice == 'h':
-            self.print_hand()
-            return True
-        elif choice == 't':
-            self.print_tickets()
-            return True
+        """Get card color decision from human player."""
+        if self.ui_interface and hasattr(self.ui_interface, 'request_card_color'):
+            return self.ui_interface.request_card_color(self)
+        
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_cards_color(self.hand, self.game)
+        except ImportError:
+            return 0
+    
+    def decide_train_card(self) -> int:
+        """Get train card selection from human player."""
+        if self.ui_interface and hasattr(self.ui_interface, 'request_train_card'):
+            return self.ui_interface.request_train_card(self)
+        
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_train_card(self.game)
+        except ImportError:
+            return 5  # Draw pile as fallback
+    
+    def decide_route(self) -> int:
+        """Get route selection from human player."""
+        if self.ui_interface and hasattr(self.ui_interface, 'request_route'):
+            return self.ui_interface.request_route(self)
+        
+        try:
+            from cli.human_player_cli import HumanPlayerCLI
+            return HumanPlayerCLI.decide_route(self.game)
+        except ImportError:
+            return 0

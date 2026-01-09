@@ -9,6 +9,11 @@ from network.decisions import NetworkDecisions
 
 
 class NEATPlayer(BasePlayer):
+    """NEAT-based AI player that uses neural networks to make decisions."""
+    
+    # Threshold for binary decisions (e.g., ticket keeping)
+    TICKET_DECISION_THRESHOLD = 0.5
+    
     def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter, network: FeedForwardNetwork = None):
         super().__init__(color_index, game, adapter)
         self.network = network
@@ -34,7 +39,7 @@ class NEATPlayer(BasePlayer):
         decision_array = self.get_decision_array()
         ticket_value = decision_array[NetworkDecisions.TICKET_DECISION_ID]
         logger.debug(f'ticket decision value: {decision_array[NetworkDecisions.TICKET_DECISION_ID]}')
-        return self.is_active(ticket_value)
+        return self.is_active(ticket_value, self.TICKET_DECISION_THRESHOLD)
 
     def decide_action(self):
         decision_array = self.get_decision_array()
@@ -67,5 +72,14 @@ class NEATPlayer(BasePlayer):
         return values_list.index(max_value)
 
     @staticmethod
-    def is_active(value, threshold=0.5):
+    def is_active(value: float, threshold: float = TICKET_DECISION_THRESHOLD) -> int:
+        """Determine if a value is active based on threshold.
+        
+        Args:
+            value: The value to check
+            threshold: The threshold value (defaults to class constant)
+            
+        Returns:
+            1 if value >= threshold, 0 otherwise
+        """
         return 1 if value >= threshold else 0

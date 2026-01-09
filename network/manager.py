@@ -1,12 +1,28 @@
+"""NEAT network training manager."""
 import neat
 import os
 import pickle
+from typing import Optional
 
-CONFIG_FILENAME = "neat_config.txt"
-GENOME_FILENAME = 'best_genome.pkl'
-PLAYERS_NUM = 4
-GAME_VERSION = 'USA'
-NUM_GENERATIONS = 20
+# Try to load config, fall back to defaults
+try:
+    from game.config_loader import load_config
+    _config = load_config()
+    _neat_config = _config.get('neat', {})
+    CONFIG_FILENAME = _neat_config.get('config_filename', 'network/neat_config.txt')
+    GENOME_FILENAME = _neat_config.get('genome_filename', 'best_genome.pkl')
+    PLAYERS_NUM = _neat_config.get('players_num', 4)
+    GAME_VERSION = _neat_config.get('game_version', 'USA')
+    NUM_GENERATIONS = _neat_config.get('num_generations', 20)
+    MAX_MOVES_PER_GAME = _neat_config.get('max_moves_per_game', 1000)
+except (ImportError, Exception):
+    # Default values if config loading fails
+    CONFIG_FILENAME = "neat_config.txt"
+    GENOME_FILENAME = 'best_genome.pkl'
+    PLAYERS_NUM = 4
+    GAME_VERSION = 'USA'
+    NUM_GENERATIONS = 20
+    MAX_MOVES_PER_GAME = 1000
 
 
 def load_network():
@@ -34,7 +50,7 @@ def eval_genomes(genomes, config):
             networks.append(neat.nn.FeedForwardNetwork.create(genome, config))
 
         game = Game(player_types=['NEAT'] * PLAYERS_NUM, version=GAME_VERSION, networks=networks)
-        stats = game.play(max_moves=1_000)
+        stats = game.play(max_moves=MAX_MOVES_PER_GAME)
 
         for j in range(PLAYERS_NUM):
             genome_id, genome = genomes[i + j]

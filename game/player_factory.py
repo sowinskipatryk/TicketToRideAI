@@ -17,12 +17,12 @@ if TYPE_CHECKING:
 
 
 class PlayerFactory:
-    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork]) -> Tuple[List[BasePlayer], BlankAdapter]:
+    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork] = None, ui_interface=None) -> Tuple[List[BasePlayer], BlankAdapter]:
         adapter = self.determine_adapter(player_types, game)
         players = []
         for index, player_type in enumerate(player_types):
             network = networks[index] if networks else None
-            player = self.create_player(index, player_type, game, adapter, network)
+            player = self.create_player(index, player_type, game, adapter, network, ui_interface=ui_interface)
             players.append(player)
         return players, adapter
 
@@ -34,7 +34,7 @@ class PlayerFactory:
             return BlankAdapter()
 
     @staticmethod
-    def create_player(index: int, type_: str, game, adapter: BlankAdapter, network: FeedForwardNetwork) -> BasePlayer:
+    def create_player(index: int, type_: str, game, adapter: BlankAdapter, network: FeedForwardNetwork = None, ui_interface=None) -> BasePlayer:
         try:
             player_type = PlayerType(type_)
         except ValueError:
@@ -52,5 +52,7 @@ class PlayerFactory:
             if network is None:
                 network = load_network()
             return player_class(index, game, adapter, network)
+        elif player_type == PlayerType.HUMAN:
+            return player_class(index, game, adapter, ui_interface=ui_interface)
 
         return player_class(index, game, adapter)
