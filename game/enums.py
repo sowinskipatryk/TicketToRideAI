@@ -22,6 +22,7 @@ class PlayerType(Enum):
     TICKET_FOCUSED = 'TicketFocused'
     CARD_HOARDER = 'CardHoarder'
     BLOCKER = 'Blocker'
+    MCTS = 'MCTS'
 
 
 class PlayerColor(Enum):

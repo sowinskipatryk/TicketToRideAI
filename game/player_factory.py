@@ -11,6 +11,7 @@ from game.players.greedy_route_agent import GreedyRouteAgent
 from game.players.ticket_focused_agent import TicketFocusedAgent
 from game.players.card_hoarder_agent import CardHoarderAgent
 from game.players.blocker_agent import BlockerAgent
+from game.players.mcts_player import MCTSPlayer
 
 from network.manager import load_network
 from network.adapters.blank_adapter import BlankAdapter
@@ -52,6 +53,7 @@ class PlayerFactory:
             PlayerType.TICKET_FOCUSED: TicketFocusedAgent,
             PlayerType.CARD_HOARDER: CardHoarderAgent,
             PlayerType.BLOCKER: BlockerAgent,
+            PlayerType.MCTS: MCTSPlayer,
             }
 
         player_class = player_types.get(player_type)
