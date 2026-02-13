@@ -186,7 +186,7 @@ class GameBoard:
         """
         # Create a simple hash based on claimed routes
         claimed_routes = tuple(
-            sorted((u, v, data.get('claimed_by'))
+            sorted((u, v, str(data.get('claimed_by')))
                   for u, v, data in self.G.edges(data=True)
                   if data.get('claimed_by') is not None)
         )

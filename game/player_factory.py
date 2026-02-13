@@ -7,6 +7,10 @@ from game.players.base_player import BasePlayer
 from game.players.neat_player import NEATPlayer
 from game.players.human_player import HumanPlayer
 from game.players.random_player import RandomPlayer
+from game.players.greedy_route_agent import GreedyRouteAgent
+from game.players.ticket_focused_agent import TicketFocusedAgent
+from game.players.card_hoarder_agent import CardHoarderAgent
+from game.players.blocker_agent import BlockerAgent
 
 from network.manager import load_network
 from network.adapters.blank_adapter import BlankAdapter
@@ -38,12 +42,16 @@ class PlayerFactory:
         try:
             player_type = PlayerType(type_)
         except ValueError:
-            raise ValueError(f"Invalid player type {type_}. Choose from: Human, NEAT, Random")
+            raise ValueError(f"Invalid player type {type_}. Choose from: {[e.value for e in PlayerType]}")
 
         player_types = {
             PlayerType.NEAT: NEATPlayer,
             PlayerType.HUMAN: HumanPlayer,
-            PlayerType.RANDOM: RandomPlayer
+            PlayerType.RANDOM: RandomPlayer,
+            PlayerType.GREEDY: GreedyRouteAgent,
+            PlayerType.TICKET_FOCUSED: TicketFocusedAgent,
+            PlayerType.CARD_HOARDER: CardHoarderAgent,
+            PlayerType.BLOCKER: BlockerAgent,
             }
 
         player_class = player_types.get(player_type)
