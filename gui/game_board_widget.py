@@ -170,9 +170,9 @@ class GameBoardWidget(QWidget):
                 route_length = data.get('weight', 1)
                 
                 if claimed_by:
-                    # Route is claimed - use player color
+                    # Route is claimed - use player color (fully opaque and thicker)
                     color = self._get_player_color(claimed_by)
-                    pen_width = 5
+                    pen_width = 6  # Thicker for claimed routes
                     is_curved = False
                 elif link_id in self.available_routes:
                     # Available route - use route color with highlight
@@ -182,13 +182,14 @@ class GameBoardWidget(QWidget):
                         min(255, base_color.red() + 50),
                         min(255, base_color.green() + 50),
                         min(255, base_color.blue() + 50),
-                        220
+                        220  # Semi-transparent
                     )
                     pen_width = 4
                     is_curved = num_parallel > 1
                 else:
-                    # Unavailable route - use route color
-                    color = self._get_route_color(route_color)
+                    # Unavailable route - use route color with transparency
+                    base_color = self._get_route_color(route_color)
+                    color = QColor(base_color.red(), base_color.green(), base_color.blue(), 120)  # More transparent
                     pen_width = 3
                     is_curved = num_parallel > 1
                 
@@ -197,7 +198,7 @@ class GameBoardWidget(QWidget):
                 if is_curved and num_parallel > 1:
                     # Offset parallel routes in a curve
                     offset_idx = idx - (num_parallel - 1) / 2
-                    offset = offset_idx * 8  # 8 pixels per parallel route
+                    offset = offset_idx * 18  # 18 pixels per parallel route for better separation
                 
                 # Draw route line
                 pen = QPen(color, pen_width)
@@ -240,27 +241,27 @@ class GameBoardWidget(QWidget):
                 
                 # Draw route length label
                 if not claimed_by:  # Only show length for unclaimed routes
-                    painter.setFont(QFont("Arial", 9, QFont.Weight.Bold))
-                    
+                    painter.setFont(QFont("Arial", 8, QFont.Weight.Bold))  # Slightly smaller
+
                     # Background for text
                     text = str(route_length)
                     text_rect = painter.fontMetrics().boundingRect(text)
                     text_x = mid_x - text_rect.width() / 2
                     text_y = mid_y - text_rect.height() / 2
-                    
-                    # Draw white background circle
-                    bg_radius = max(text_rect.width(), text_rect.height()) / 2 + 3
-                    painter.setBrush(QBrush(QColor(255, 255, 255, 230)))
-                    painter.setPen(QPen(QColor(0, 0, 0), 1))
+
+                    # Draw white background circle (smaller and more transparent)
+                    bg_radius = max(text_rect.width(), text_rect.height()) / 2 + 2.5
+                    painter.setBrush(QBrush(QColor(255, 255, 255, 200)))  # More transparent
+                    painter.setPen(QPen(QColor(100, 100, 100), 1))  # Lighter border
                     painter.drawEllipse(
                         int(text_x - bg_radius + text_rect.width() / 2),
                         int(text_y - bg_radius + text_rect.height() / 2),
                         int(bg_radius * 2),
                         int(bg_radius * 2)
                     )
-                    
+
                     # Draw text
-                    painter.setPen(QPen(QColor(0, 0, 0)))
+                    painter.setPen(QPen(QColor(60, 60, 60)))  # Slightly lighter black
                     painter.drawText(
                         int(text_x),
                         int(text_y + text_rect.height()),
@@ -275,20 +276,24 @@ class GameBoardWidget(QWidget):
             painter.setPen(QPen(QColor(0, 0, 0), 2))
             radius = 10
             painter.drawEllipse(int(x - radius), int(y - radius), radius * 2, radius * 2)
-            
-            # Draw city name with background
+
+            # Draw city name with background and outline for better contrast
             text_rect = painter.fontMetrics().boundingRect(node)
             text_x = int(x - text_rect.width() / 2)
             text_y = int(y - radius - 8)
-            
-            # White background for text
-            painter.setBrush(QBrush(QColor(255, 255, 255, 240)))
+
+            # White background for text (semi-transparent)
+            painter.setBrush(QBrush(QColor(255, 255, 255, 220)))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRect(
-                text_x - 2, text_y - text_rect.height(),
-                text_rect.width() + 4, text_rect.height() + 2
+                text_x - 3, text_y - text_rect.height() - 1,
+                text_rect.width() + 6, text_rect.height() + 3
             )
-            
+
+            # Draw text with subtle outline for better readability
+            # Draw outline
+            painter.setPen(QPen(QColor(255, 255, 255), 3))
+            painter.drawText(text_x, text_y, node)
             # Draw text
             painter.setPen(QPen(QColor(0, 0, 0)))
             painter.drawText(text_x, text_y, node)
