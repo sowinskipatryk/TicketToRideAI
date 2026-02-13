@@ -148,7 +148,10 @@ class ISMCTS:
         return max(children, key=ucb1)
 
     def _rollout(self, state: SimState, player_id: int) -> float:
-        """Simulate to terminal using rollout policy, return normalized score."""
+        """Simulate to terminal using rollout policy, return normalized score.
+
+        Uses sigmoid of score difference for smoother gradient than binary win/loss.
+        """
         for _ in range(self.max_rollout_depth):
             if is_terminal(state):
                 break
@@ -160,12 +163,9 @@ class ISMCTS:
 
         scores = evaluate(state)
 
-        # Normalize: win=1.0, tie=0.5, loss=0.0
         my_score = scores[player_id]
         max_opponent = max(s for i, s in enumerate(scores) if i != player_id)
-        if my_score > max_opponent:
-            return 1.0
-        elif my_score == max_opponent:
-            return 0.5
-        else:
-            return 0.0
+        diff = my_score - max_opponent
+        # Sigmoid: maps diff to (0, 1), with 0 diff -> 0.5
+        # Scale of 30 means a 30-point lead gives ~0.73
+        return 1.0 / (1.0 + math.exp(-diff / 30.0))

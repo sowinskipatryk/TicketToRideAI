@@ -19,60 +19,87 @@ def random_rollout(state: SimState, actions: List[Action]) -> Action:
 def heuristic_rollout(state: SimState, actions: List[Action]) -> Action:
     """Ticket-aware heuristic rollout.
 
-    Priority:
-    1. Claim a route that completes a ticket
-    2. Claim a route on the path toward an incomplete ticket
-    3. Claim the highest-value route available
-    4. Draw a needed card color from face-up
-    5. Draw from pile
-    6. Random
+    Strategy:
+    1. Always claim a route that completes a ticket
+    2. Only claim routes worth 4+ points, otherwise draw cards
+    3. Prefer drawing needed colors from face-up, then wilds, then pile
+    4. Draw tickets if hand is large and all tickets completed
     """
     pid = state.current_player
     hand = state.hands[pid]
+    hand_size = sum(hand.values())
     player_tickets = state.tickets[pid]
 
     # Separate action types
     claim_actions = [a for a in actions if a.action_type == 0]
     draw_actions = [a for a in actions if a.action_type == 2]
+    ticket_actions = [a for a in actions if a.action_type == 1]
 
+    # 1. Always claim a route that completes a ticket
     if claim_actions:
-        # Check if any claim completes a ticket
         for action in claim_actions:
-            ri = _find_route(state, action.link_id)
-            if ri is None:
-                continue
-            # Simulate this claim and check ticket completion
             for ticket, completed in player_tickets.items():
                 if completed:
                     continue
                 if _would_complete_ticket(state, pid, action.link_id, ticket):
                     return action
 
-        # Pick highest-value claimable route
-        best_action = max(claim_actions,
-                          key=lambda a: state.route_values.get(
-                              _find_route(state, a.link_id).weight, 0)
-                          if _find_route(state, a.link_id) else 0)
-        if best_action:
-            return best_action
+    # 2. Claim high-value routes (4+ weight = 7+ points)
+    good_claims = []
+    for a in claim_actions:
+        ri = _find_route(state, a.link_id)
+        if ri and ri.weight >= 4:
+            good_claims.append((a, state.route_values.get(ri.weight, 0)))
+    if good_claims:
+        good_claims.sort(key=lambda x: x[1], reverse=True)
+        return good_claims[0][0]
 
+    # 3. If we have enough cards, claim medium routes (3+)
+    if hand_size >= 8:
+        medium_claims = []
+        for a in claim_actions:
+            ri = _find_route(state, a.link_id)
+            if ri and ri.weight >= 3:
+                medium_claims.append((a, state.route_values.get(ri.weight, 0)))
+        if medium_claims:
+            medium_claims.sort(key=lambda x: x[1], reverse=True)
+            return medium_claims[0][0]
+
+    # 4. Draw tickets if all current tickets completed and we have cards
+    incomplete = sum(1 for _, c in player_tickets.items() if not c)
+    if ticket_actions and incomplete == 0 and hand_size >= 6:
+        return ticket_actions[0]
+
+    # 5. Draw cards — prefer needed colors, then wilds, then pile
     if draw_actions:
-        # Prefer drawing cards in colors we need
         needed_colors = _get_needed_colors(state, pid)
 
-        # Check face-up cards for needed colors
+        # Face-up wilds
         for action in draw_actions:
             if action.card_choice < 5:
                 card = state.face_up_cards[action.card_choice]
                 if card == 'wild':
-                    return action  # Always grab wilds
+                    return action
+
+        # Needed colors from face-up
+        for action in draw_actions:
+            if action.card_choice < 5:
+                card = state.face_up_cards[action.card_choice]
                 if card in needed_colors:
                     return action
 
-        # Default to draw pile
+        # Draw pile
         pile_action = next((a for a in draw_actions if a.card_choice == 5), None)
         if pile_action:
             return pile_action
+
+    # 6. Claim any remaining route (even small ones) as last resort
+    if claim_actions:
+        best = max(claim_actions,
+                   key=lambda a: state.route_values.get(
+                       _find_route(state, a.link_id).weight, 0)
+                   if _find_route(state, a.link_id) else 0)
+        return best
 
     return random.choice(actions)
 
