@@ -226,14 +226,19 @@ def get_legal_actions(state: SimState) -> List[Action]:
             continue
 
         if ri.edge_color == 'grey':
-            # Try each color
+            # For grey routes, pick only the best color (fewest wilds needed)
+            best_color = None
+            best_wilds = None
             for color in state.config.TRAIN_COLORS:
                 wilds = _wilds_needed(hand, color, ri.weight)
-                if wilds is not None:
-                    actions.append(Action(
-                        action_type=0, link_id=ri.link_id,
-                        color=color, wilds=wilds,
-                    ))
+                if wilds is not None and (best_wilds is None or wilds < best_wilds):
+                    best_color = color
+                    best_wilds = wilds
+            if best_color is not None:
+                actions.append(Action(
+                    action_type=0, link_id=ri.link_id,
+                    color=best_color, wilds=best_wilds,
+                ))
         else:
             wilds = _wilds_needed(hand, ri.edge_color, ri.weight)
             if wilds is not None:
@@ -242,11 +247,23 @@ def get_legal_actions(state: SimState) -> List[Action]:
                     color=ri.edge_color, wilds=wilds,
                 ))
 
-    # DRAW_CARDS actions — one per face-up card + draw pile
+    # DRAW_CARDS actions — deduplicate by card color seen in face-up
     has_cards = len(state.draw_pile) > 0 or len(state.discard_pile) > 0
+    seen_colors = set()
+    wild_face_up_idx = None
     for i, card in enumerate(state.face_up_cards):
-        if card is not None:
+        if card is None:
+            continue
+        if card == 'wild':
+            if wild_face_up_idx is None:
+                wild_face_up_idx = i
+            continue
+        if card not in seen_colors:
+            seen_colors.add(card)
             actions.append(Action(action_type=2, card_choice=i))
+    # Wild face-up as separate option (costs the whole turn)
+    if wild_face_up_idx is not None:
+        actions.append(Action(action_type=2, card_choice=wild_face_up_idx))
     if has_cards:
         actions.append(Action(action_type=2, card_choice=5))  # draw pile
 

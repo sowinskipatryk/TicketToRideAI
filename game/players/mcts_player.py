@@ -16,7 +16,7 @@ class MCTSPlayer(BasePlayer):
     read from the cached action.
     """
 
-    DEFAULT_ITERATIONS = 200
+    DEFAULT_ITERATIONS = 400
 
     def __init__(self, color_index, game, adapter, iterations=None):
         super().__init__(color_index, game, adapter)
