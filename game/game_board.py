@@ -4,7 +4,7 @@ import networkx as nx
 from collections import defaultdict
 from typing import Dict, Union, Tuple, TYPE_CHECKING
 
-from game.data_loader import load_routes, load_cities
+from game.data_loader import load_routes, load_cities, load_city_coordinates
 from game.game_logger import logger
 
 if TYPE_CHECKING:
@@ -19,13 +19,14 @@ class GameBoard:
     """
     def __init__(self, game: 'Game'):
         """Initialize the game board.
-        
+
         Args:
             game: Reference to the Game instance
         """
         self.game = game
         self.routes = load_routes(self.game.version)
         self.cities = load_cities(self.game.version)
+        self.city_coordinates = load_city_coordinates(self.game.version)
         self.G = nx.MultiGraph()
         self._fill_graph()
 

@@ -82,10 +82,14 @@ class GameControllerGUI(QObject):
     def start_game(self):
         """Start the game with initial setup."""
         game = self.game_controller.game
-        
-        # Initialize board
-        self.board_widget.set_graph(game.board.G, game.board.cities)
-        
+
+        # Initialize board with geographic coordinates if available
+        self.board_widget.set_graph(
+            game.board.G,
+            game.board.cities,
+            city_coordinates=game.board.city_coordinates
+        )
+
         # Disable actions during initial setup
         self.action_panel.set_actions_enabled(False, False, False, False)
         

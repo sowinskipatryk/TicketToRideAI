@@ -24,23 +24,33 @@ class GameBoardWidget(QWidget):
         self.setMinimumSize(1000, 700)
         self.setStyleSheet("background-color: #f0f0f0;")
     
-    def set_graph(self, graph: nx.MultiGraph, cities: list):
+    def set_graph(self, graph: nx.MultiGraph, cities: list, city_coordinates: dict = None):
         """Set the game graph and calculate positions.
-        
+
         Args:
             graph: NetworkX graph representing the board
             cities: List of city names
+            city_coordinates: Optional dict mapping city names to (lat, lon) tuples
         """
         self.graph = graph
-        
-        # Calculate node positions using spring layout with much better spacing
-        # Increase k parameter significantly for larger node separation
-        # Use more iterations for better convergence
-        num_nodes = len(graph.nodes())
-        # Scale k based on number of nodes for optimal spacing
-        k_value = max(5, math.sqrt(num_nodes) * 2)
-        pos = nx.spring_layout(graph, k=k_value, iterations=200, seed=42)
-        
+        self.city_coordinates = city_coordinates  # Store for resize events
+
+        # Use geographic coordinates if available
+        if city_coordinates:
+            # Convert lat/lon to screen coordinates
+            # Note: longitude is x-axis, latitude is y-axis
+            # Negate latitude since screen Y increases downward
+            pos = {city: (lon, -lat) for city, (lat, lon) in city_coordinates.items() if city in graph.nodes()}
+        else:
+            # Fallback to spring layout
+            # Calculate node positions using spring layout with much better spacing
+            # Increase k parameter significantly for larger node separation
+            # Use more iterations for better convergence
+            num_nodes = len(graph.nodes())
+            # Scale k based on number of nodes for optimal spacing
+            k_value = max(5, math.sqrt(num_nodes) * 2)
+            pos = nx.spring_layout(graph, k=k_value, iterations=200, seed=42)
+
         # Scale positions to widget size - use more of the available space
         if pos:
             min_x = min(p[0] for p in pos.values())
@@ -78,7 +88,9 @@ class GameBoardWidget(QWidget):
         super().resizeEvent(event)
         if self.graph:
             # Recalculate positions with new widget size
-            self.set_graph(self.graph, list(self.graph.nodes()))
+            # Preserve city_coordinates if they were set
+            city_coords = getattr(self, 'city_coordinates', None)
+            self.set_graph(self.graph, list(self.graph.nodes()), city_coords)
     
     def _calculate_route_groups(self):
         """Group routes by their endpoints for parallel route handling."""
