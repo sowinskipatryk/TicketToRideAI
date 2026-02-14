@@ -23,6 +23,7 @@ class PlayerType(Enum):
     CARD_HOARDER = 'CardHoarder'
     BLOCKER = 'Blocker'
     MCTS = 'MCTS'
+    ALPHAZERO = 'AlphaZero'
 
 
 class PlayerColor(Enum):

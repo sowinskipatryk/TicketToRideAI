@@ -12,6 +12,7 @@ from game.players.ticket_focused_agent import TicketFocusedAgent
 from game.players.card_hoarder_agent import CardHoarderAgent
 from game.players.blocker_agent import BlockerAgent
 from game.players.mcts_player import MCTSPlayer
+from game.players.alphazero_player import AlphaZeroPlayer
 
 from network.manager import load_network
 from network.adapters.blank_adapter import BlankAdapter
@@ -54,6 +55,7 @@ class PlayerFactory:
             PlayerType.CARD_HOARDER: CardHoarderAgent,
             PlayerType.BLOCKER: BlockerAgent,
             PlayerType.MCTS: MCTSPlayer,
+            PlayerType.ALPHAZERO: AlphaZeroPlayer,
             }
 
         player_class = player_types.get(player_type)
