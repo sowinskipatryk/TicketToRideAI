@@ -26,6 +26,12 @@ def main():
     parser.add_argument('--checkpoint-interval', type=int, default=10,
                         help='Save checkpoint every N iterations')
     parser.add_argument('--resume', type=str, default=None, help='Resume from checkpoint path')
+    parser.add_argument('--eval-interval', type=int, default=0,
+                        help='Evaluate every N iterations (0 = disabled)')
+    parser.add_argument('--eval-games', type=int, default=10,
+                        help='Number of evaluation games')
+    parser.add_argument('--eval-opponent', type=str, default='TicketFocused',
+                        help='Opponent for evaluation')
     args = parser.parse_args()
 
     if args.resume:
@@ -55,6 +61,8 @@ def main():
     print(f'  Train steps/iter: {args.train_steps}')
     print(f'  Batch size: {args.batch_size}')
     print(f'  Network: {args.hidden_size}x{args.res_blocks} ResBlocks')
+    if args.eval_interval > 0:
+        print(f'  Eval: every {args.eval_interval} iters, {args.eval_games} games vs {args.eval_opponent}')
     print()
 
     trainer.train(
@@ -65,6 +73,9 @@ def main():
         batch_size=args.batch_size,
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_interval=args.checkpoint_interval,
+        eval_interval=args.eval_interval,
+        eval_games=args.eval_games,
+        eval_opponent=args.eval_opponent,
     )
 
     # Save final checkpoint

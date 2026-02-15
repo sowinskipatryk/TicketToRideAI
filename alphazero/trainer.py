@@ -1,4 +1,5 @@
 """AlphaZero training orchestrator: self-play + neural network training."""
+import logging
 import os
 import time
 from typing import Optional
@@ -51,6 +52,9 @@ class AlphaZeroTrainer:
         batch_size: int = 256,
         checkpoint_dir: Optional[str] = None,
         checkpoint_interval: int = 10,
+        eval_interval: int = 0,
+        eval_games: int = 10,
+        eval_opponent: str = 'TicketFocused',
         verbose: bool = True,
     ):
         """Run the full training loop.
@@ -63,6 +67,9 @@ class AlphaZeroTrainer:
             batch_size: Minibatch size.
             checkpoint_dir: Directory to save checkpoints.
             checkpoint_interval: Save every N iterations.
+            eval_interval: Evaluate every N iterations (0 = disabled).
+            eval_games: Number of evaluation games.
+            eval_opponent: Opponent type for evaluation.
             verbose: Print progress.
         """
         if checkpoint_dir:
@@ -133,6 +140,49 @@ class AlphaZeroTrainer:
             # 3. Checkpoint
             if checkpoint_dir and self.iteration % checkpoint_interval == 0:
                 self.save_checkpoint(checkpoint_dir)
+
+            # 4. Evaluate
+            if eval_interval > 0 and self.iteration % eval_interval == 0:
+                self.evaluate(eval_games, eval_opponent, mcts_iterations)
+
+    def evaluate(self, num_games: int, opponent: str, mcts_iterations: int) -> dict:
+        """Play games against a baseline opponent and report results."""
+        from game.core import Game
+
+        self.network.eval()
+        prev_level = logging.getLogger().level
+        logging.disable(logging.CRITICAL)
+
+        wins = 0
+        total_score_az = 0
+        total_score_opp = 0
+
+        try:
+            for i in range(num_games):
+                g = Game(['AlphaZero', opponent], 'USA')
+                g.players[0].network.load_state_dict(self.network.state_dict())
+                g.players[0].network.to(self.device)
+                g.players[0].network.eval()
+                g.players[0].az_mcts.iterations = mcts_iterations
+
+                stats = g.play()
+                s_az, s_opp = stats['score'][0], stats['score'][1]
+                total_score_az += s_az
+                total_score_opp += s_opp
+                if s_az > s_opp:
+                    wins += 1
+        finally:
+            logging.disable(prev_level)
+
+        win_rate = wins / num_games
+        avg_az = total_score_az / num_games
+        avg_opp = total_score_opp / num_games
+        print(
+            f'  EVAL vs {opponent} ({num_games}g): '
+            f'Win rate: {win_rate:.0%} | '
+            f'Avg score: {avg_az:.1f} vs {avg_opp:.1f}'
+        )
+        return {'win_rate': win_rate, 'avg_score_az': avg_az, 'avg_score_opp': avg_opp}
 
     def save_checkpoint(self, checkpoint_dir: str) -> str:
         path = os.path.join(checkpoint_dir, f'alphazero_iter{self.iteration}.pt')
