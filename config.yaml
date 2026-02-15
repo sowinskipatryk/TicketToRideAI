@@ -3,7 +3,7 @@
 # NEAT Training Configuration
 neat:
   players_num: 4
-  game_version: "USA"  # Options: USA, Europe, Nordic
+  game_version: "USA"  # Options: USA, Europe
   num_generations: 20
   max_moves_per_game: 1000
   config_filename: "network/neat_config.txt"
@@ -17,7 +17,7 @@ logging:
 
 # Game Configuration
 game:
-  default_version: "USA"  # Options: USA, Europe, Nordic
+  default_version: "USA"  # Options: USA, Europe
   min_players: 2
   max_players: 5
 

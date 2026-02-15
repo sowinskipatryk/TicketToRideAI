@@ -17,7 +17,7 @@ def load_city_coordinates(version: str) -> Optional[Dict[str, Tuple[float, float
     """Load geographic coordinates for cities.
 
     Args:
-        version: Game version (USA, Europe, Nordic)
+        version: Game version (USA, Europe)
 
     Returns:
         Dictionary mapping city names to (lat, lon) tuples, or None if not available

@@ -29,23 +29,17 @@ class EuropeConfig(BaseConfig):
     NUM_STATIONS = 15
 
 
-class NordicConfig(BaseConfig):
-    WILD_CARD_RESTRICTION = False
-    GLOBETROTTER_BONUS = 10
-
-
 class ConfigFactory:
     @staticmethod
     def create(version: str) -> BaseConfig:
         try:
             game_version = GameVersion(version)
         except ValueError:
-            raise ValueError("Invalid game version. Choose from: USA, Europe, Nordic")
+            raise ValueError("Invalid game version. Choose from: USA, Europe")
 
         config_map = {
             GameVersion.USA: USAConfig,
             GameVersion.EUROPE: EuropeConfig,
-            GameVersion.NORDIC: NordicConfig,
             }
 
         config_class = config_map.get(game_version)

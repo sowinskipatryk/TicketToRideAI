@@ -4,7 +4,7 @@ A Python implementation of the Ticket to Ride board game with AI players powered
 
 ## Features
 
-- **Multiple Game Versions**: Support for USA, Europe, and Nordic variants
+- **Multiple Game Versions**: Support for USA and Europe variants
 - **AI Players**: NEAT-based neural network players that learn through evolution
 - **Player Types**: Human, Random, and NEAT AI players
 - **Extensible Architecture**: Easy to add new player types or game versions
@@ -74,7 +74,7 @@ python scripts/play_game.py
 
 You can modify `scripts/play_game.py` to customize:
 - **Players**: Choose from `'Human'`, `'NEAT'`, or `'Random'` (2-5 players)
-- **Game Version**: Choose from `'USA'`, `'Europe'`, or `'Nordic'`
+- **Game Version**: Choose from `'USA'` or `'Europe'`
 
 Example:
 ```python
@@ -168,8 +168,7 @@ TicketToRideAI/
 │   │   └── random_player.py # Random player
 │   └── data/               # Game data (YAML files)
 │       ├── USA/
-│       ├── Europe/
-│       └── Nordic/
+│       └── Europe/
 ├── gui/                     # GUI components
 │   ├── main_window.py      # Main window
 │   ├── game_board_widget.py # Board widget

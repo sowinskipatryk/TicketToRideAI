@@ -26,7 +26,7 @@ class Game:
         
         Args:
             player_types: List of player type strings ('Human', 'NEAT', 'Random')
-            version: Game version ('USA', 'Europe', 'Nordic')
+            version: Game version ('USA', 'Europe')
             networks: Optional list of NEAT networks for NEAT players
             ui_interface: Optional UI interface for human players (GUI or CLI)
             

@@ -45,7 +45,7 @@ def run_batch(
     Args:
         num_games: Number of games to simulate.
         player_types: List of player type strings (2-5 players).
-        version: Game version (USA, Europe, Nordic).
+        version: Game version (USA, Europe).
         max_moves: Max moves per game (safety valve).
         parallel: Number of parallel workers (1 = sequential).
         telemetry_db: Optional path to SQLite telemetry database.

@@ -23,7 +23,7 @@ class NewGameDialog(QDialog):
         version_layout = QFormLayout()
         
         self.version_combo = QComboBox()
-        self.version_combo.addItems(["USA", "Europe", "Nordic"])
+        self.version_combo.addItems(["USA", "Europe"])
         version_layout.addRow("Version:", self.version_combo)
         
         version_group.setLayout(version_layout)
