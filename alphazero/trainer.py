@@ -182,10 +182,13 @@ class AlphaZeroTrainer:
         try:
             for i in range(num_games):
                 g = Game(['AlphaZero', opponent], 'USA')
-                g.players[0].network.load_state_dict(self.network.state_dict())
-                g.players[0].network.to(self.device)
-                g.players[0].network.eval()
-                g.players[0].az_mcts.iterations = mcts_iterations
+                az = g.players[0]
+                az.network.load_state_dict(self.network.state_dict())
+                az.network.to(self.device)
+                az.network.eval()
+                az.az_mcts.network = az.network
+                az.az_mcts.device = self.device
+                az.az_mcts.iterations = mcts_iterations
 
                 stats = g.play()
                 s_az, s_opp = stats['score'][0], stats['score'][1]
