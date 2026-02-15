@@ -1,8 +1,9 @@
 """AlphaZero training orchestrator: self-play + neural network training."""
+import json
 import logging
 import os
 import time
-from typing import Optional
+from typing import Optional, List, Dict
 
 import torch
 import torch.nn.functional as F
@@ -42,6 +43,7 @@ class AlphaZeroTrainer:
         )
         self.replay_buffer = ReplayBuffer(max_size=buffer_size)
         self.iteration = 0
+        self.training_log: List[Dict] = []
 
     def train(
         self,
@@ -125,9 +127,19 @@ class AlphaZeroTrainer:
             self.iteration = iteration + 1
             elapsed = time.time() - iter_start
 
+            avg_ploss = total_policy_loss / max(actual_steps, 1)
+            avg_vloss = total_value_loss / max(actual_steps, 1)
+
+            entry = {
+                'iteration': self.iteration,
+                'policy_loss': round(avg_ploss, 4),
+                'value_loss': round(avg_vloss, 4),
+                'samples': total_samples,
+                'buffer_size': len(self.replay_buffer),
+                'time': round(elapsed, 1),
+            }
+
             if verbose:
-                avg_ploss = total_policy_loss / max(actual_steps, 1)
-                avg_vloss = total_value_loss / max(actual_steps, 1)
                 print(
                     f'Iter {self.iteration:3d} | '
                     f'Games: {games_per_iteration} | '
@@ -143,7 +155,17 @@ class AlphaZeroTrainer:
 
             # 4. Evaluate
             if eval_interval > 0 and self.iteration % eval_interval == 0:
-                self.evaluate(eval_games, eval_opponent, mcts_iterations)
+                eval_result = self.evaluate(eval_games, eval_opponent, mcts_iterations)
+                entry['eval_win_rate'] = eval_result['win_rate']
+                entry['eval_avg_score'] = eval_result['avg_score_az']
+                entry['eval_opp_score'] = eval_result['avg_score_opp']
+
+            self.training_log.append(entry)
+
+            # Save log and plot
+            if checkpoint_dir and self.iteration % checkpoint_interval == 0:
+                self._save_log(checkpoint_dir)
+                self._plot_training(checkpoint_dir)
 
     def evaluate(self, num_games: int, opponent: str, mcts_iterations: int) -> dict:
         """Play games against a baseline opponent and report results."""
@@ -201,7 +223,81 @@ class AlphaZeroTrainer:
         self.network.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.iteration = checkpoint['iteration']
+        # Try to load training log from same directory
+        checkpoint_dir = os.path.dirname(path)
+        self._load_log(checkpoint_dir)
 
     def set_lr(self, lr: float) -> None:
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr
+
+    def _save_log(self, checkpoint_dir: str) -> None:
+        path = os.path.join(checkpoint_dir, 'training_log.json')
+        with open(path, 'w') as f:
+            json.dump(self.training_log, f, indent=2)
+
+    def _load_log(self, checkpoint_dir: str) -> None:
+        path = os.path.join(checkpoint_dir, 'training_log.json')
+        if os.path.exists(path):
+            with open(path) as f:
+                self.training_log = json.load(f)
+
+    def _plot_training(self, checkpoint_dir: str) -> None:
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+
+        if len(self.training_log) < 2:
+            return
+
+        iters = [e['iteration'] for e in self.training_log]
+        policy_loss = [e['policy_loss'] for e in self.training_log]
+        value_loss = [e['value_loss'] for e in self.training_log]
+
+        eval_entries = [e for e in self.training_log if 'eval_win_rate' in e]
+        has_eval = len(eval_entries) > 0
+
+        num_plots = 3 if has_eval else 2
+        fig, axes = plt.subplots(num_plots, 1, figsize=(10, 4 * num_plots))
+
+        # Policy loss
+        axes[0].plot(iters, policy_loss, 'b-', linewidth=1.5)
+        axes[0].set_ylabel('Policy Loss')
+        axes[0].set_title('AlphaZero Training Progress')
+        axes[0].grid(True, alpha=0.3)
+
+        # Value loss
+        axes[1].plot(iters, value_loss, 'r-', linewidth=1.5)
+        axes[1].set_ylabel('Value Loss')
+        axes[1].set_xlabel('Iteration' if not has_eval else '')
+        axes[1].grid(True, alpha=0.3)
+
+        # Win rate + scores
+        if has_eval:
+            eval_iters = [e['iteration'] for e in eval_entries]
+            win_rates = [e['eval_win_rate'] for e in eval_entries]
+            az_scores = [e['eval_avg_score'] for e in eval_entries]
+            opp_scores = [e['eval_opp_score'] for e in eval_entries]
+
+            ax_wr = axes[2]
+            ax_sc = ax_wr.twinx()
+
+            ln1 = ax_wr.plot(eval_iters, win_rates, 'g-o', linewidth=2, markersize=4, label='Win Rate')
+            ax_wr.set_ylabel('Win Rate', color='g')
+            ax_wr.set_ylim(-0.05, 1.05)
+            ax_wr.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5)
+            ax_wr.grid(True, alpha=0.3)
+
+            ln2 = ax_sc.plot(eval_iters, az_scores, 'b--', linewidth=1, label='AZ Score')
+            ln3 = ax_sc.plot(eval_iters, opp_scores, 'r--', linewidth=1, label='Opp Score')
+            ax_sc.set_ylabel('Avg Score')
+
+            lns = ln1 + ln2 + ln3
+            labels = [l.get_label() for l in lns]
+            ax_wr.legend(lns, labels, loc='upper left', fontsize=8)
+            axes[2].set_xlabel('Iteration')
+
+        plt.tight_layout()
+        path = os.path.join(checkpoint_dir, 'training_progress.png')
+        fig.savefig(path, dpi=150)
+        plt.close(fig)

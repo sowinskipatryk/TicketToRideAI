@@ -78,9 +78,13 @@ def main():
         eval_opponent=args.eval_opponent,
     )
 
-    # Save final checkpoint
+    # Save final checkpoint, log, and plot
     path = trainer.save_checkpoint(args.checkpoint_dir)
+    trainer._save_log(args.checkpoint_dir)
+    trainer._plot_training(args.checkpoint_dir)
     print(f'\nTraining complete. Final checkpoint: {path}')
+    print(f'Training log: {args.checkpoint_dir}/training_log.json')
+    print(f'Training plot: {args.checkpoint_dir}/training_progress.png')
 
 
 if __name__ == '__main__':
