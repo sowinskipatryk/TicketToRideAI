@@ -22,7 +22,7 @@ class AlphaZeroPlayer(BasePlayer):
     DEFAULT_ITERATIONS = 200
 
     def __init__(self, color_index, game, adapter, model_path=None, iterations=None,
-                 device=None):
+                 device=None, hidden_size=256, num_res_blocks=4):
         super().__init__(color_index, game, adapter)
 
         # Lazy imports to avoid circular dependency
@@ -32,13 +32,18 @@ class AlphaZeroPlayer(BasePlayer):
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.network = AlphaZeroNet()
         if model_path:
             checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+            # Auto-detect architecture from checkpoint if available
+            hidden_size = checkpoint.get('hidden_size', hidden_size)
+            num_res_blocks = checkpoint.get('num_res_blocks', num_res_blocks)
+            self.network = AlphaZeroNet(hidden_size=hidden_size, num_res_blocks=num_res_blocks)
             if 'model_state_dict' in checkpoint:
                 self.network.load_state_dict(checkpoint['model_state_dict'])
             else:
                 self.network.load_state_dict(checkpoint)
+        else:
+            self.network = AlphaZeroNet(hidden_size=hidden_size, num_res_blocks=num_res_blocks)
         self.network.to(device)
         self.network.eval()
 

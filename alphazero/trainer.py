@@ -141,6 +141,8 @@ class AlphaZeroTrainer:
             'model_state_dict': self.network.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'buffer_size': len(self.replay_buffer),
+            'hidden_size': self.network.input_fc.out_features,
+            'num_res_blocks': len(self.network.res_blocks),
         }, path)
         return path
 
@@ -149,3 +151,7 @@ class AlphaZeroTrainer:
         self.network.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.iteration = checkpoint['iteration']
+
+    def set_lr(self, lr: float) -> None:
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = lr

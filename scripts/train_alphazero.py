@@ -6,6 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import argparse
 
+import torch
+
 from alphazero.trainer import AlphaZeroTrainer
 
 
@@ -26,15 +28,25 @@ def main():
     parser.add_argument('--resume', type=str, default=None, help='Resume from checkpoint path')
     args = parser.parse_args()
 
-    trainer = AlphaZeroTrainer(
-        hidden_size=args.hidden_size,
-        num_res_blocks=args.res_blocks,
-        lr=args.lr,
-    )
-
     if args.resume:
+        checkpoint = torch.load(args.resume, map_location='cpu', weights_only=False)
+        hidden_size = checkpoint.get('hidden_size', args.hidden_size)
+        num_res_blocks = checkpoint.get('num_res_blocks', args.res_blocks)
+        trainer = AlphaZeroTrainer(
+            hidden_size=hidden_size,
+            num_res_blocks=num_res_blocks,
+            lr=args.lr,
+        )
         print(f'Resuming from {args.resume}')
         trainer.load_checkpoint(args.resume)
+        trainer.set_lr(args.lr)
+        print(f'  Learning rate set to {args.lr}')
+    else:
+        trainer = AlphaZeroTrainer(
+            hidden_size=args.hidden_size,
+            num_res_blocks=args.res_blocks,
+            lr=args.lr,
+        )
 
     print(f'Starting AlphaZero training:')
     print(f'  Iterations: {args.iterations}')
