@@ -4,8 +4,8 @@ from neat.nn import FeedForwardNetwork
 
 from game.game_logger import logger
 from game.players.base_player import BasePlayer
-from network.adapters.blank_adapter import BlankAdapter
-from network.decisions import NetworkDecisions
+from neuroevolution.adapters.blank_adapter import BlankAdapter
+from neuroevolution.decisions import NetworkDecisions
 
 
 class NEATPlayer(BasePlayer):

@@ -91,8 +91,8 @@ python scripts/train_network.py
 ```
 
 Training parameters can be configured in:
-- `network/neat_config.txt` - NEAT algorithm configuration
-- `network/manager.py` - Training parameters (players, generations, etc.)
+- `neuroevolution/neat_config.txt` - NEAT algorithm configuration
+- `neuroevolution/manager.py` - Training parameters (players, generations, etc.)
 - `config.yaml` - General configuration
 
 After training, the best genome is saved as `best_genome.pkl` in the project root.
@@ -101,7 +101,7 @@ After training, the best genome is saved as `best_genome.pkl` in the project roo
 
 #### NEAT Training Configuration
 
-Edit `network/manager.py` or `config.yaml` to adjust:
+Edit `neuroevolution/manager.py` or `config.yaml` to adjust:
 - `PLAYERS_NUM`: Number of players per game (default: 4)
 - `GAME_VERSION`: Game version to train on (default: 'USA')
 - `NUM_GENERATIONS`: Number of generations to evolve (default: 20)
@@ -177,7 +177,7 @@ TicketToRideAI/
 │   ├── action_panel.py     # Action buttons
 │   ├── game_controller_gui.py # GUI controller
 │   └── new_game_dialog.py  # Game setup
-├── network/                 # NEAT network integration
+├── neuroevolution/          # NEAT neuroevolution integration
 │   ├── manager.py          # Training manager
 │   ├── decisions.py        # Network decision constants
 │   ├── neat_config.txt     # NEAT algorithm config

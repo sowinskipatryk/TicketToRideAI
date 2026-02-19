@@ -39,7 +39,7 @@ def get_default_config() -> Dict[str, Any]:
             'game_version': 'USA',
             'num_generations': 20,
             'max_moves_per_game': 1000,
-            'config_filename': 'network/neat_config.txt',
+            'config_filename': 'neuroevolution/neat_config.txt',
             'genome_filename': 'best_genome.pkl'
         },
         'logging': {

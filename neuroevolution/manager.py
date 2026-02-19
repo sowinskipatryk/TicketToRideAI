@@ -9,7 +9,7 @@ try:
     from game.config_loader import load_config
     _config = load_config()
     _neat_config = _config.get('neat', {})
-    CONFIG_FILENAME = _neat_config.get('config_filename', 'network/neat_config.txt')
+    CONFIG_FILENAME = _neat_config.get('config_filename', 'neuroevolution/neat_config.txt')
     GENOME_FILENAME = _neat_config.get('genome_filename', 'best_genome.pkl')
     PLAYERS_NUM = _neat_config.get('players_num', 4)
     GAME_VERSION = _neat_config.get('game_version', 'USA')

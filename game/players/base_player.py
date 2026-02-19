@@ -6,7 +6,7 @@ from game.enums import ActionDecision
 from game.enums import TrainCardDecision, PlayerColor
 from game.ticket_deck import Ticket
 from game.game_logger import logger
-from network.adapters.blank_adapter import BlankAdapter
+from neuroevolution.adapters.blank_adapter import BlankAdapter
 
 if TYPE_CHECKING:
     from game.core import Game

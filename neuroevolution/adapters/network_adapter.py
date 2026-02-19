@@ -1,5 +1,5 @@
 from game.game_logger import logger
-from network.adapters.blank_adapter import BlankAdapter
+from neuroevolution.adapters.blank_adapter import BlankAdapter
 
 
 class NetworkAdapter(BlankAdapter):

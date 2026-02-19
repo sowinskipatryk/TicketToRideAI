@@ -14,9 +14,9 @@ from game.players.blocker_agent import BlockerAgent
 from game.players.mcts_player import MCTSPlayer
 from game.players.alphazero_player import AlphaZeroPlayer
 
-from network.manager import load_network
-from network.adapters.blank_adapter import BlankAdapter
-from network.adapters.network_adapter import NetworkAdapter
+from neuroevolution.manager import load_network
+from neuroevolution.adapters.blank_adapter import BlankAdapter
+from neuroevolution.adapters.network_adapter import NetworkAdapter
 
 if TYPE_CHECKING:
     from game.core import Game
