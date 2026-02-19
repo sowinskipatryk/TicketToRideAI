@@ -76,6 +76,7 @@ class GameBoard:
         for u, v, data in self.G.edges(data=True):
             if data['link_id'] == link_id:
                 return data['claimed_by']
+        raise ValueError(f"Route with link_id {link_id} not found")
 
     def validate_route(self, player, data) -> bool:
         """Validate if a player can claim a route.
@@ -110,6 +111,7 @@ class GameBoard:
         for u, v, data in self.G.edges(data=True):
             if data['link_id'] == link_id:
                 return u, v, data
+        raise ValueError(f"Route with link_id {link_id} not found")
 
     def player_subgraph(self, player_color):
         G = nx.Graph()

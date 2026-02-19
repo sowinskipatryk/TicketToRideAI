@@ -95,10 +95,10 @@ def heuristic_rollout(state: SimState, actions: List[Action]) -> Action:
 
     # 6. Claim any remaining route (even small ones) as last resort
     if claim_actions:
-        best = max(claim_actions,
-                   key=lambda a: state.route_values.get(
-                       _find_route(state, a.link_id).weight, 0)
-                   if _find_route(state, a.link_id) else 0)
+        def _route_weight(a):
+            ri = _find_route(state, a.link_id)
+            return state.route_values.get(ri.weight, 0) if ri else 0
+        best = max(claim_actions, key=_route_weight)
         return best
 
     return random.choice(actions)

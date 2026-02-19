@@ -50,7 +50,7 @@ class NEATPlayer(BasePlayer):
     def decide_wild_cards(self):
         decision_array = self.get_decision_array()
         locomotive_value = decision_array[NetworkDecisions.LOCOMOTIVE_DECISION_ID]
-        return math.floor(locomotive_value * self.game.config.NUM_WILD_CARDS)
+        return math.floor(locomotive_value * self.hand.get('wild', 0))
 
     def decide_tickets(self, min_keep, tickets):
         ticket_decision_values = [(i, self.decide_ticket()) for i in range(len(tickets))]

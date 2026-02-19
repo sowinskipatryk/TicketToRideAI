@@ -20,7 +20,7 @@ class RandomPlayer(BasePlayer):
         return random.randrange(0, len(list(ActionDecision)))
 
     def decide_wild_cards(self) -> int:
-        return random.randint(0, self.game.config.NUM_WILD_CARDS)
+        return random.randint(0, self.hand.get('wild', 0))
 
     def decide_cards_color(self) -> int:
         return random.randrange(0, len(self.game.config.TRAIN_COLORS))
