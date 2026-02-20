@@ -32,7 +32,12 @@ def main():
                         help='Number of evaluation games')
     parser.add_argument('--eval-opponent', type=str, default='TicketFocused',
                         help='Opponent for evaluation')
+    parser.add_argument('--device', type=str, default=None,
+                        help='Device to use: cpu, cuda, cuda:0, etc. (default: auto-detect)')
     args = parser.parse_args()
+
+    if args.device is None:
+        args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu', weights_only=False)
@@ -42,6 +47,7 @@ def main():
             hidden_size=hidden_size,
             num_res_blocks=num_res_blocks,
             lr=args.lr,
+            device=args.device,
         )
         print(f'Resuming from {args.resume}')
         trainer.load_checkpoint(args.resume)
@@ -52,9 +58,11 @@ def main():
             hidden_size=args.hidden_size,
             num_res_blocks=args.res_blocks,
             lr=args.lr,
+            device=args.device,
         )
 
     print(f'Starting AlphaZero training:')
+    print(f'  Device: {args.device}')
     print(f'  Iterations: {args.iterations}')
     print(f'  Games/iter: {args.games}')
     print(f'  MCTS iters: {args.mcts_iters}')
