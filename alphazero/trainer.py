@@ -80,18 +80,20 @@ class AlphaZeroTrainer:
         for iteration in range(self.iteration, self.iteration + num_iterations):
             iter_start = time.time()
 
-            # 1. Self-play
+            # 1. Self-play (always on CPU: batch=1 inference is slower on GPU)
             self.network.eval()
+            self.network.to('cpu')
             total_samples = 0
             for g in range(games_per_iteration):
                 samples = self_play_game(
-                    self.network, device=self.device,
+                    self.network, device='cpu',
                     mcts_iterations=mcts_iterations,
                 )
                 self.replay_buffer.add(samples)
                 total_samples += len(samples)
 
-            # 2. Train
+            # 2. Train (move back to target device for batched gradient updates)
+            self.network.to(self.device)
             self.network.train()
             total_policy_loss = 0.0
             total_value_loss = 0.0
