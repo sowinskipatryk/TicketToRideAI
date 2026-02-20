@@ -32,12 +32,10 @@ def load_city_coordinates(version: str) -> Optional[Dict[str, Tuple[float, float
         return None
 
 
-def load_routes(version: str) -> List[List[str]]:
+def load_routes(version: str) -> List[Dict]:
     file_path = os.path.join(current_dir, 'data', version, 'routes.yaml')
-    routes = []
     with open(file_path, 'r', encoding='utf-8') as file:
-        routes = yaml.safe_load(file)
-    return routes
+        return yaml.safe_load(file)
 
 
 def load_tickets(version: str) -> collections.deque:

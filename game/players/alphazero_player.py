@@ -1,10 +1,10 @@
 """AlphaZero player: uses NN-guided MCTS for decision-making."""
-import networkx as nx
 import torch
 from typing import Tuple, List, TYPE_CHECKING
 
 from game.enums import TrainCardDecision
 from game.players.base_player import BasePlayer
+from game.players.route_utils import decide_tickets_by_distance
 from game.ticket_deck import Ticket
 
 if TYPE_CHECKING:
@@ -90,24 +90,4 @@ class AlphaZeroPlayer(BasePlayer):
         return TrainCardDecision.DRAW_PILE.value
 
     def decide_tickets(self, min_keep: int, tickets: List[Ticket]) -> Tuple[List[int], List[int]]:
-        scored = []
-        for i, ticket in enumerate(tickets):
-            try:
-                dist = nx.shortest_path_length(
-                    self.game.board.G, ticket.city_from, ticket.city_to, weight='weight'
-                )
-                score = ticket.points / max(dist, 1)
-                if dist <= self.trains_remaining:
-                    score += 1
-                else:
-                    score -= 2
-            except (nx.NetworkXNoPath, nx.NodeNotFound):
-                score = -1
-            scored.append((i, score))
-
-        scored.sort(key=lambda x: x[1], reverse=True)
-        keep_count = max(min_keep, sum(1 for _, s in scored if s > 0))
-        keep_count = min(keep_count, len(tickets))
-
-        indices = [i for i, _ in scored]
-        return indices[:keep_count], indices[keep_count:]
+        return decide_tickets_by_distance(self, min_keep, tickets)

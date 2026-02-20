@@ -29,8 +29,12 @@ DRAW_CARD_OFFSET = NUM_LINKS * NUM_COLORS       # 900..905
 DRAW_TICKETS_OFFSET = DRAW_CARD_OFFSET + 6      # 906
 ACTION_SPACE_SIZE = DRAW_TICKETS_OFFSET + 1      # 907
 
+# Game version this encoding is built for. Must match the version used during training.
+# Changing this requires retraining the network from scratch (different STATE_SIZE / NUM_TICKETS).
+ENCODING_GAME_VERSION = 'USA'
+
 # Build canonical ticket ordering (sorted by city_from, city_to)
-_TICKET_DATA = load_tickets('USA')
+_TICKET_DATA = load_tickets(ENCODING_GAME_VERSION)
 CANONICAL_TICKETS: List[Ticket] = sorted(
     [Ticket(t['from'], t['to'], t['points']) for t in _TICKET_DATA],
     key=lambda t: (t.city_from, t.city_to),

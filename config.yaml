@@ -11,7 +11,7 @@ neat:
 
 # Logging Configuration
 logging:
-  console_level: "DEBUG"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  console_level: "WARNING"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
   file_level: "ERROR"     # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
   log_file: "game.log"
 

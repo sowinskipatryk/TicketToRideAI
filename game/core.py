@@ -66,6 +66,24 @@ class Game:
         if hasattr(self.config, 'LONGEST_ROUTE_BONUS'):
             self.stats['longest_path_length'] = [0 for _ in range(self.players_num)]
 
+    def _run_turn(self, max_moves: int) -> bool:
+        """Execute the current player's turn and track stats.
+
+        Returns:
+            False if max_moves limit was reached before the turn, True otherwise.
+        """
+        if max_moves and sum(self.stats['total_moves']) >= max_moves:
+            return False
+        current_player = self.players[self.current_player_id]
+        self.stats['total_moves'][self.current_player_id] += 1
+        move_completed = current_player.play_turn()
+        if move_completed:
+            self.stats['completed_moves'][current_player.player_id] += 1
+        else:
+            self.stats['invalid_moves'][current_player.player_id] += 1
+        self.log_game_state()
+        return True
+
     def move_to_next_player(self) -> None:
         self.current_player_id = (self.current_player_id + 1) % self.players_num
 
@@ -75,12 +93,22 @@ class Game:
     def last_round_condition(self, player: BasePlayer) -> bool:
         return player.get_trains_num() <= self.config.MIN_TRAIN_FIGURES
 
+    def _deal_initial(self) -> None:
+        """Deal initial cards and tickets to all players, transition to RUNNING state."""
+        self.ticket_deck.set_ticket_pile_num_adapter()
+        self.game_state = GameState.RUNNING
+        logger.info(self.game_state)
+        for player in self.players:
+            player.draw_initial_train_cards(self.config.NUM_TRAIN_CARDS_DEALT_INIT)
+            player.draw_tickets(num_tickets=self.config.NUM_TICKETS_DEALT_INIT,
+                                min_keep=self.config.MIN_TICKETS_KEPT_INIT)
+
     def play(self, max_moves: int = 0) -> Dict:
         """Run the game until completion.
-        
+
         Args:
             max_moves: Maximum number of moves before stopping (0 = no limit)
-            
+
         Returns:
             Dictionary containing game statistics:
             - invalid_moves: List of invalid move counts per player
@@ -94,43 +122,22 @@ class Game:
             - claimed_routes: List of claimed route counts per player
             - longest_path_length: List of longest path lengths (if applicable)
         """
-        self.ticket_deck.set_ticket_pile_num_adapter()
-        self.game_state = GameState.RUNNING
-        logger.info(self.game_state)
-
-        for player in self.players:
-            player.draw_initial_train_cards(self.config.NUM_TRAIN_CARDS_DEALT_INIT)
-            player.draw_tickets(num_tickets=self.config.NUM_TICKETS_DEALT_INIT,
-                                min_keep=self.config.MIN_TICKETS_KEPT_INIT)
+        self._deal_initial()
 
         while self.game_state != GameState.LAST_ROUND:
-            if max_moves and sum(self.stats['total_moves']) >= max_moves:
+            if not self._run_turn(max_moves):
                 break
             current_player = self.players[self.current_player_id]
-            self.stats['total_moves'][self.current_player_id] += 1
-            move_completed = current_player.play_turn()
-            if move_completed:
-                self.stats['completed_moves'][current_player.player_id] += 1
-            else:
-                self.stats['invalid_moves'][current_player.player_id] += 1
-            self.log_game_state()
             if self.last_round_condition(current_player):
                 self.last_player = current_player
                 self.game_state = GameState.LAST_ROUND
             self.move_to_next_player()
 
         while self.game_state != GameState.FINISHED:
-            if max_moves and sum(self.stats['total_moves']) >= max_moves:
-                break
-            self.stats['total_moves'][self.current_player_id] += 1
             current_player = self.players[self.current_player_id]
-            move_completed = current_player.play_turn()
-            if move_completed:
-                self.stats['completed_moves'][current_player.player_id] += 1
-            else:
-                self.stats['invalid_moves'][current_player.player_id] += 1
-            self.log_game_state()
-            if current_player is self.last_player:
+            if not self._run_turn(max_moves):
+                break
+            if current_player.player_id == self.last_player.player_id:
                 self.game_state = GameState.FINISHED
             else:
                 self.move_to_next_player()
@@ -229,14 +236,14 @@ class Game:
         return self.config.ROUTE_VALUES[route_length]
 
     def print_game_stats(self):
-        print('completed_moves:', self.stats['completed_moves'])
-        print('invalid_moves:', self.stats['invalid_moves'])
-        print('total_moves:', self.stats['total_moves'])
-        print('completed_tickets:', self.stats['completed_tickets'])
-        print('total_tickets:', self.stats['total_tickets'])
-        print('trains_remaining:', self.stats['trains_remaining'])
-        print('claimed_routes:', self.stats['claimed_routes'])
+        logger.info(f"completed_moves: {self.stats['completed_moves']}")
+        logger.info(f"invalid_moves: {self.stats['invalid_moves']}")
+        logger.info(f"total_moves: {self.stats['total_moves']}")
+        logger.info(f"completed_tickets: {self.stats['completed_tickets']}")
+        logger.info(f"total_tickets: {self.stats['total_tickets']}")
+        logger.info(f"trains_remaining: {self.stats['trains_remaining']}")
+        logger.info(f"claimed_routes: {self.stats['claimed_routes']}")
         if hasattr(self.config, 'LONGEST_ROUTE_BONUS'):
-            print('longest_path_length:', self.stats['longest_path_length'])
-            print('longest_path_owner:', self.stats['longest_path_owner'])
-        print('score:', self.stats['score'])
+            logger.info(f"longest_path_length: {self.stats['longest_path_length']}")
+            logger.info(f"longest_path_owner: {self.stats['longest_path_owner']}")
+        logger.info(f"score: {self.stats['score']}")

@@ -34,7 +34,10 @@ class PlayerColor(Enum):
 
     @classmethod
     def from_index(cls, idx: int) -> "PlayerColor":
-        return list(cls)[idx]
+        colors = list(cls)
+        if not 0 <= idx < len(colors):
+            raise ValueError(f"Player index {idx} out of range (0–{len(colors) - 1})")
+        return colors[idx]
 
 
 class ActionDecision(Enum):

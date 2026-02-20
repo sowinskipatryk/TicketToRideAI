@@ -1,4 +1,8 @@
-from typing import Optional, Dict, TYPE_CHECKING
+from typing import Optional, Dict, List, Tuple, TYPE_CHECKING
+
+import networkx as nx
+
+from game.ticket_deck import Ticket
 
 if TYPE_CHECKING:
     from game.players.base_player import BasePlayer
@@ -35,6 +39,41 @@ def wilds_needed(hand: Dict[str, int], color: str, weight: int) -> int:
     color_cards = hand.get(color, 0)
     needed = max(0, weight - color_cards)
     return min(needed, hand.get('wild', 0))
+
+
+def decide_tickets_by_distance(
+    player: 'BasePlayer',
+    min_keep: int,
+    tickets: List[Ticket],
+) -> Tuple[List[int], List[int]]:
+    """Score tickets by reward-to-distance ratio and keep the best ones.
+
+    Prefers tickets that are reachable within the player's remaining trains.
+    Used by MCTS and AlphaZero players.
+
+    Returns:
+        Tuple of (kept_indices, discarded_indices).
+    """
+    scored = []
+    for i, ticket in enumerate(tickets):
+        try:
+            dist = nx.shortest_path_length(
+                player.game.board.G, ticket.city_from, ticket.city_to, weight='weight'
+            )
+            score = ticket.points / max(dist, 1)
+            if dist <= player.trains_remaining:
+                score += 1
+            else:
+                score -= 2
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
+            score = -1
+        scored.append((i, score))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
+    keep_count = max(min_keep, sum(1 for _, s in scored if s > 0))
+    keep_count = min(keep_count, len(tickets))
+    indices = [i for i, _ in scored]
+    return indices[:keep_count], indices[keep_count:]
 
 
 def find_best_affordable_route(player: 'BasePlayer', game: 'Game', min_length: int = 1) -> Optional[int]:

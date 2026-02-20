@@ -59,6 +59,9 @@ class GameBoard:
         """
         for u, v, data in self.G.edges(data=True):
             if data['link_id'] == link_id:
+                if data['claimed_by'] is not None:
+                    logger.warning(f"Attempted to claim already-claimed link_id {link_id}")
+                    return False
                 data['claimed_by'] = player_color
                 # Invalidate cache when route is claimed
                 self.invalidate_path_cache()

@@ -76,7 +76,7 @@ class TrainCardManager:
     def fill_face_up(self) -> None:
         logger.debug('fill_face_up')
         logger.debug(f'before {self._face_up_cards}')
-        self.get_state()
+        self._log_state()
         tries = 0
         while self.get_face_up_cards_num() < self.game.config.NUM_FACE_UP_CARDS:
             closest_none_id = self._face_up_cards.index(None)
@@ -98,16 +98,16 @@ class TrainCardManager:
                 self._wild_card_count = 0
                 tries += 1
         logger.debug(f'after {self._face_up_cards}')
-        self.get_state()
+        self._log_state()
 
     def fill_draw_pile(self) -> None:
         logger.debug('fill_draw_pile')
-        self.get_state()
+        self._log_state()
         if len(self._discard_pile) != 0:
             self.fill_from_discard_pile()
         else:
             logger.debug('Discard pile is empty!')
-        self.get_state()
+        self._log_state()
 
     def fill_from_discard_pile(self):
         self._draw_pile = self._discard_pile
@@ -123,7 +123,7 @@ class TrainCardManager:
             self._discard_pile.append(card)
         self.set_discard_pile_num_adapter()
 
-    def get_state(self) -> None:
+    def _log_state(self) -> None:
         logger.debug(f'face_up: {len(self._face_up_cards)} draw: {len(self._draw_pile)} discard: {len(self._discard_pile)}')
 
     def set_draw_pile_num_adapter(self):
