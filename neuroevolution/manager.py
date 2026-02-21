@@ -1,6 +1,7 @@
 """NEAT network training manager."""
 import copy
 import gzip
+import json
 import neat
 import os
 import pickle
@@ -51,13 +52,22 @@ class TrainingReporter(neat.reporting.BaseReporter):
     to track absolute improvement independent of opponent strength.
     """
 
-    def __init__(self, num_generations: int):
+    def __init__(self, num_generations: int, log_path: str, start_generation: int = 0):
         self.num_generations = num_generations
+        self.log_path = log_path
         self.generation = 0
         self._gen_start = None
         self._best_ever = float('-inf')
-        self.best_genome = None             # copy of best genome seen, frozen at time of best fitness
-        self.calibration_scores: list = []  # vs Greedy per generation
+        self.best_genome = None  # copy of best genome seen, frozen at time of best fitness
+        self.training_log: list = []
+        if start_generation > 0 and os.path.exists(log_path):
+            with open(log_path) as f:
+                full_log = json.load(f)
+            # Keep only entries up to and including the checkpoint generation,
+            # discarding any entries from generations that ran after the checkpoint.
+            self.training_log = [e for e in full_log if e['generation'] <= start_generation]
+            if self.training_log:
+                self._best_ever = max(e['all_time_best'] for e in self.training_log)
 
     def start_generation(self, generation):
         self.generation = generation
@@ -71,7 +81,14 @@ class TrainingReporter(neat.reporting.BaseReporter):
         num_species = len(species_set.species)
         best_nodes = len(best_genome.nodes)
         calibration = _calibrate(best_genome, config)
-        self.calibration_scores.append(calibration)
+        self.training_log.append({
+            'generation': self.generation + 1,
+            'best_fitness': best_genome.fitness,
+            'all_time_best': self._best_ever,
+            'vs_greedy': calibration,
+        })
+        with open(self.log_path, 'w') as f:
+            json.dump(self.training_log, f, indent=2)
         print(
             f"Gen {self.generation + 1:2d}/{self.num_generations} | "
             f"Best: {best_genome.fitness:+7.1f} | "
@@ -167,21 +184,22 @@ def save_genome(genome):
         pickle.dump(genome, file)
 
 
-def _save_plot(stats, reporter: TrainingReporter, filename='neat_training.png'):
+def _save_plot(training_log: list, filename: str):
     try:
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
 
-        best_per_gen = [g.fitness for g in stats.most_fit_genomes]
-        running_best = []
-        current_best = float('-inf')
-        for f in best_per_gen:
-            current_best = max(current_best, f)
-            running_best.append(current_best)
-        generations = range(1, len(best_per_gen) + 1)
+        if len(training_log) < 2:
+            return
+
+        generations = [e['generation'] for e in training_log]
+        best_per_gen = [e['best_fitness'] for e in training_log]
+        running_best = [e['all_time_best'] for e in training_log]
+        vs_greedy = [e['vs_greedy'] for e in training_log]
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
-        # Top panel: self-play fitness
         ax1.plot(generations, best_per_gen, 'b-o', label='Best this gen', markersize=4, alpha=0.6)
         ax1.plot(generations, running_best, 'g-', label='All-time best', linewidth=2)
         ax1.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
@@ -190,16 +208,13 @@ def _save_plot(stats, reporter: TrainingReporter, filename='neat_training.png'):
         ax1.legend()
         ax1.grid(True, alpha=0.3)
 
-        # Bottom panel: calibration vs GreedyRouteAgent
-        if reporter.calibration_scores:
-            ax2.plot(generations, reporter.calibration_scores, 'r-o',
-                     label='vs Greedy (absolute)', markersize=4)
-            ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
-            ax2.set_ylabel('Score diff vs Greedy')
-            ax2.legend()
-            ax2.grid(True, alpha=0.3)
-
+        ax2.plot(generations, vs_greedy, 'r-o', label='vs Greedy (absolute)', markersize=4)
+        ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
+        ax2.set_ylabel('Score diff vs Greedy')
         ax2.set_xlabel('Generation')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+
         fig.tight_layout()
         fig.savefig(filename, dpi=100)
         plt.close(fig)
@@ -215,10 +230,17 @@ def run_neat(resume_checkpoint: str = None):
                       config_path)
 
     if resume_checkpoint:
+        if not os.path.exists(resume_checkpoint):
+            candidate = os.path.join(CHECKPOINT_DIR, resume_checkpoint)
+            if os.path.exists(candidate):
+                resume_checkpoint = candidate
         print(f"Resuming from checkpoint: {resume_checkpoint}\n")
         population = neat.Checkpointer.restore_checkpoint(resume_checkpoint)
+        # population.generation is 0-indexed; +1 gives the 1-indexed log generation
+        start_generation = population.generation + 1
         generations_to_run = max(1, NUM_GENERATIONS - population.generation)
     else:
+        start_generation = 0  # fresh start: don't load any existing log
         population = neat.Population(cnf)
         generations_to_run = NUM_GENERATIONS
 
@@ -227,11 +249,11 @@ def run_neat(resume_checkpoint: str = None):
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     checkpoint_prefix = os.path.join(CHECKPOINT_DIR, 'neat-checkpoint-')
+    log_path = os.path.join(CHECKPOINT_DIR, 'training_log.json')
+    plot_path = os.path.join(CHECKPOINT_DIR, 'training_progress.png')
 
-    reporter = TrainingReporter(NUM_GENERATIONS)
-    stats = neat.StatisticsReporter()
+    reporter = TrainingReporter(NUM_GENERATIONS, log_path, start_generation)
     population.add_reporter(reporter)
-    population.add_reporter(stats)
     population.add_reporter(_Checkpointer(generation_interval=10, filename_prefix=checkpoint_prefix))
 
     population.run(eval_genomes, generations_to_run)
@@ -239,4 +261,4 @@ def run_neat(resume_checkpoint: str = None):
     save_genome(best)
 
     print(f"\nTraining complete | Best fitness: {reporter._best_ever:+.1f} | Saved: {GENOME_FILENAME}")
-    _save_plot(stats, reporter)
+    _save_plot(reporter.training_log, plot_path)
