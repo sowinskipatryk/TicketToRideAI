@@ -1,9 +1,24 @@
 """NEAT network training manager."""
 import copy
+import gzip
 import neat
 import os
 import pickle
+import random
 import time
+
+CHECKPOINT_DIR = 'checkpoints/neat'
+
+
+class _Checkpointer(neat.Checkpointer):
+    """Checkpointer that saves to CHECKPOINT_DIR with 1-indexed generation numbers."""
+
+    def save_checkpoint(self, config, population, species_set, generation):
+        filename = f'{self.filename_prefix}{generation + 1}'
+        print(f"Saving checkpoint to {filename}")
+        with gzip.open(filename, 'w', compresslevel=5) as f:
+            data = (generation, config, population, species_set, random.getstate())
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Try to load config, fall back to defaults
 try:
@@ -205,11 +220,14 @@ def run_neat(resume_checkpoint: str = None):
     print(f"NEAT Training | pop={cnf.pop_size} | generations={NUM_GENERATIONS} | "
           f"players={PLAYERS_NUM} | version={GAME_VERSION}\n")
 
+    os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+    checkpoint_prefix = os.path.join(CHECKPOINT_DIR, 'neat-checkpoint-')
+
     reporter = TrainingReporter(NUM_GENERATIONS)
     stats = neat.StatisticsReporter()
     population.add_reporter(reporter)
     population.add_reporter(stats)
-    population.add_reporter(neat.Checkpointer(generation_interval=10))
+    population.add_reporter(_Checkpointer(generation_interval=10, filename_prefix=checkpoint_prefix))
 
     population.run(eval_genomes, NUM_GENERATIONS)
     best = reporter.best_genome
