@@ -58,8 +58,8 @@ class TrainingReporter(neat.reporting.BaseReporter):
         self.generation = 0
         self._gen_start = None
         self._best_ever = float('-inf')
-        self._session_best = float('-inf')  # resets each run; guards best_genome updates
-        self.best_genome = None  # copy of best genome seen, frozen at time of best fitness
+        self._best_calibration = float('-inf')  # guards best_genome: immune to early opponent inflation
+        self.best_genome = None  # genome with highest vs-Greedy calibration score seen this session
         self.training_log: list = []
         if start_generation > 0 and os.path.exists(log_path):
             with open(log_path) as f:
@@ -78,13 +78,13 @@ class TrainingReporter(neat.reporting.BaseReporter):
         elapsed = time.time() - self._gen_start
         if best_genome.fitness > self._best_ever:
             self._best_ever = best_genome.fitness
-        if best_genome.fitness > self._session_best:
-            self._session_best = best_genome.fitness
-            self.best_genome = copy.deepcopy(best_genome)
-            save_genome(self.best_genome)
         num_species = len(species_set.species)
         best_nodes = len(best_genome.nodes)
         calibration = _calibrate(best_genome, config)
+        if calibration > self._best_calibration:
+            self._best_calibration = calibration
+            self.best_genome = copy.deepcopy(best_genome)
+            save_genome(self.best_genome)
         self.training_log.append({
             'generation': self.generation + 1,
             'best_fitness': best_genome.fitness,
