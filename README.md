@@ -87,7 +87,7 @@ version = 'USA'
 Train a NEAT neural network to play the game:
 
 ```bash
-python scripts/train_network.py
+python scripts/train_neat.py
 ```
 
 Training parameters can be configured in:

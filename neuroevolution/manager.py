@@ -22,7 +22,7 @@ except (ImportError, Exception):
     GENOME_FILENAME = 'best_genome.pkl'
     PLAYERS_NUM = 2
     GAME_VERSION = 'USA'
-    NUM_GENERATIONS = 20
+    NUM_GENERATIONS = 100
     MAX_MOVES_PER_GAME = 1000
 
 
@@ -209,7 +209,7 @@ def run_neat(resume_checkpoint: str = None):
     stats = neat.StatisticsReporter()
     population.add_reporter(reporter)
     population.add_reporter(stats)
-    population.add_reporter(neat.Checkpointer(generation_interval=1))
+    population.add_reporter(neat.Checkpointer(generation_interval=10))
 
     population.run(eval_genomes, NUM_GENERATIONS)
     best = reporter.best_genome
