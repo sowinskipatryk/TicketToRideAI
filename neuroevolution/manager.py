@@ -85,7 +85,7 @@ class TrainingReporter(neat.reporting.BaseReporter):
             'generation': self.generation + 1,
             'best_fitness': best_genome.fitness,
             'all_time_best': self._best_ever,
-            'vs_greedy': calibration,
+            'vs_greedy': round(calibration, 2),
         })
         with open(self.log_path, 'w') as f:
             json.dump(self.training_log, f, indent=2)
