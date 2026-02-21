@@ -236,8 +236,9 @@ def run_neat(resume_checkpoint: str = None):
                 resume_checkpoint = candidate
         print(f"Resuming from checkpoint: {resume_checkpoint}\n")
         population = neat.Checkpointer.restore_checkpoint(resume_checkpoint)
-        # population.generation is 0-indexed; +1 gives the 1-indexed log generation
-        start_generation = population.generation + 1
+        # Skip the already-completed checkpoint generation so NEAT starts fresh from the next one.
+        population.generation += 1
+        start_generation = population.generation  # 1-indexed: e.g. 90 for neat-checkpoint-90
         generations_to_run = max(1, NUM_GENERATIONS - population.generation)
     else:
         start_generation = 0  # fresh start: don't load any existing log
