@@ -1,6 +1,6 @@
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 10000
+fitness_threshold     = 9999999
 pop_size              = 40
 reset_on_extinction   = False
 
@@ -30,7 +30,7 @@ compatibility_weight_coefficient   = 0.5
 
 # connection add/remove rates
 conn_add_prob           = 0.5
-conn_delete_prob        = 0.5
+conn_delete_prob        = 0.2
 
 # connection enable options
 enabled_default         = True
