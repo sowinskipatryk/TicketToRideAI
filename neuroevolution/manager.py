@@ -134,6 +134,9 @@ def load_network():
 def eval_genomes(genomes, config):
     from game.core import Game
 
+    for _, genome in genomes:
+        genome.fitness = 0.0  # default for any unpaired genome (when pop_size is odd)
+
     for i in range(0, len(genomes) - (len(genomes) % PLAYERS_NUM), PLAYERS_NUM):
         genome_pairs = [genomes[i + j] for j in range(PLAYERS_NUM)]
         networks = [neat.nn.FeedForwardNetwork.create(genome, config)
@@ -214,8 +217,10 @@ def run_neat(resume_checkpoint: str = None):
     if resume_checkpoint:
         print(f"Resuming from checkpoint: {resume_checkpoint}\n")
         population = neat.Checkpointer.restore_checkpoint(resume_checkpoint)
+        generations_to_run = max(1, NUM_GENERATIONS - population.generation)
     else:
         population = neat.Population(cnf)
+        generations_to_run = NUM_GENERATIONS
 
     print(f"NEAT Training | pop={cnf.pop_size} | generations={NUM_GENERATIONS} | "
           f"players={PLAYERS_NUM} | version={GAME_VERSION}\n")
@@ -229,7 +234,7 @@ def run_neat(resume_checkpoint: str = None):
     population.add_reporter(stats)
     population.add_reporter(_Checkpointer(generation_interval=10, filename_prefix=checkpoint_prefix))
 
-    population.run(eval_genomes, NUM_GENERATIONS)
+    population.run(eval_genomes, generations_to_run)
     best = reporter.best_genome
     save_genome(best)
 
