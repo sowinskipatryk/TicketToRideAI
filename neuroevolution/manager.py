@@ -71,30 +71,32 @@ class TrainingReporter(neat.reporting.BaseReporter):
         pass  # suppress NEAT's internal info messages
 
 
-def _calibrate(genome, config) -> float:
-    """Measure absolute strength: play best genome vs GreedyRouteAgent (2 games, swapped sides).
+def _calibrate(genome, config, num_games: int = 6) -> float:
+    """Measure absolute strength vs GreedyRouteAgent (num_games total, alternating sides).
 
     Self-play fitness deflates as all genomes improve together. This gives a
     stable external reference — if vs-Greedy score rises over generations,
     the population is genuinely getting better.
+
+    num_games=6 (3 per side) reduces variance enough to see a real trend.
     """
     from game.core import Game
     network = neat.nn.FeedForwardNetwork.create(genome, config)
 
     total = 0
-    # Game 1: NEAT goes first
-    g1 = Game(player_types=['NEAT', 'Greedy'], version=GAME_VERSION,
-              networks=[network, None])
-    s1 = g1.play(max_moves=MAX_MOVES_PER_GAME)
-    total += s1['score'][0] - s1['score'][1]
+    for i in range(num_games):
+        if i % 2 == 0:
+            g = Game(player_types=['NEAT', 'GREEDY'], version=GAME_VERSION,
+                     networks=[network, None])
+            s = g.play(max_moves=MAX_MOVES_PER_GAME)
+            total += s['score'][0] - s['score'][1]
+        else:
+            g = Game(player_types=['GREEDY', 'NEAT'], version=GAME_VERSION,
+                     networks=[None, network])
+            s = g.play(max_moves=MAX_MOVES_PER_GAME)
+            total += s['score'][1] - s['score'][0]
 
-    # Game 2: Greedy goes first
-    g2 = Game(player_types=['Greedy', 'NEAT'], version=GAME_VERSION,
-              networks=[None, network])
-    s2 = g2.play(max_moves=MAX_MOVES_PER_GAME)
-    total += s2['score'][1] - s2['score'][0]
-
-    return total / 2
+    return total / num_games
 
 
 

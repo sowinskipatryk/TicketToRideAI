@@ -4,7 +4,7 @@
 neat:
   players_num: 2
   game_version: "USA"  # Options: USA, Europe
-  num_generations: 20
+  num_generations: 100
   max_moves_per_game: 1000
   config_filename: "neuroevolution/neat_config.txt"
   genome_filename: "best_genome.pkl"
