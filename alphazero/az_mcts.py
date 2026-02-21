@@ -13,7 +13,7 @@ from typing import List, Optional, Dict, Tuple, TYPE_CHECKING
 import torch
 import torch.nn.functional as F
 
-from mcts.sim_game import (
+from game.sim_game import (
     SimState, Action, clone, from_game,
     get_legal_actions, apply_action, is_terminal, evaluate,
 )

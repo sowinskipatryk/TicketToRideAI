@@ -13,7 +13,7 @@ from game.game_logger import logger
 from game.players.base_player import BasePlayer
 from game.players.route_utils import decide_tickets_by_distance
 from game.ticket_deck import Ticket
-from mcts.sim_game import from_game, get_legal_actions, clone, apply_action
+from game.sim_game import from_game, get_legal_actions, clone, apply_action
 from alphazero.encoding import encode_state
 
 if TYPE_CHECKING:

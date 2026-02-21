@@ -8,7 +8,7 @@ from typing import List, Dict, Tuple, Optional
 
 from game.ticket_deck import Ticket
 from game.data_loader import load_tickets
-from mcts.sim_game import SimState, Action
+from game.sim_game import SimState, Action
 
 # --- Constants ---
 

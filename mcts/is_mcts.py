@@ -9,7 +9,7 @@ import math
 import random
 from typing import List, Optional, Callable, TYPE_CHECKING
 
-from mcts.sim_game import (
+from game.sim_game import (
     SimState, Action, clone, from_game,
     get_legal_actions, apply_action, is_terminal, evaluate,
 )

@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Dict, List, Set
 
 from game.ticket_deck import Ticket
-from mcts.sim_game import SimState, clone
+from game.sim_game import SimState, clone
 
 
 def determinize(state: SimState, perspective: int) -> SimState:
@@ -132,7 +132,7 @@ def _sample_opponent_tickets(state: SimState, perspective: int) -> None:
         for ticket in sampled:
             # Check if this ticket is already completed by this player
             # (we can see their routes, so we can check completion)
-            from mcts.sim_game import _is_ticket_completed
+            from game.sim_game import _is_ticket_completed
             new_tickets[ticket] = _is_ticket_completed(state, pid, ticket)
         state.tickets[pid] = new_tickets
 

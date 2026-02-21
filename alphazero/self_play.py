@@ -10,7 +10,7 @@ from typing import List, Tuple
 import torch
 
 from game.core import Game
-from mcts.sim_game import SimState, Action, from_game, get_legal_actions, apply_action, is_terminal, evaluate
+from game.sim_game import SimState, Action, from_game, get_legal_actions, apply_action, is_terminal, evaluate
 from alphazero.encoding import encode_state, policy_dict_to_tensor, ENCODING_GAME_VERSION
 from alphazero.az_mcts import AlphaZeroMCTS
 

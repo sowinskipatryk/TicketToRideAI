@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 from typing import List, Dict, Set
 
 from game.ticket_deck import Ticket
-from mcts.sim_game import SimState, Action, _is_ticket_completed
+from game.sim_game import SimState, Action, _is_ticket_completed
 
 
 def random_rollout(state: SimState, actions: List[Action]) -> Action:
