@@ -86,12 +86,12 @@ def _calibrate(genome, config, num_games: int = 6) -> float:
     total = 0
     for i in range(num_games):
         if i % 2 == 0:
-            g = Game(player_types=['NEAT', 'GREEDY'], version=GAME_VERSION,
+            g = Game(player_types=['NEAT', 'Greedy'], version=GAME_VERSION,
                      networks=[network, None])
             s = g.play(max_moves=MAX_MOVES_PER_GAME)
             total += s['score'][0] - s['score'][1]
         else:
-            g = Game(player_types=['GREEDY', 'NEAT'], version=GAME_VERSION,
+            g = Game(player_types=['Greedy', 'NEAT'], version=GAME_VERSION,
                      networks=[None, network])
             s = g.play(max_moves=MAX_MOVES_PER_GAME)
             total += s['score'][1] - s['score'][0]
