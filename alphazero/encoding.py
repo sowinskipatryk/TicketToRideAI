@@ -140,7 +140,7 @@ def action_to_index(action: Action) -> int:
         return DRAW_CARD_OFFSET + action.card_choice
     elif action.action_type == 1:  # DRAW_TICKETS
         return DRAW_TICKETS_OFFSET
-    return 0
+    raise ValueError(f"Unknown action_type: {action.action_type}")
 
 
 def index_to_action(index: int, legal_actions: List[Action]) -> Optional[Action]:

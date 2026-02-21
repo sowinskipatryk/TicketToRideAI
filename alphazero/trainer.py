@@ -114,7 +114,7 @@ class AlphaZeroTrainer:
                     ).sum(dim=1).mean()
 
                     # Value loss: MSE
-                    value_loss = F.mse_loss(value_pred.squeeze(-1), values)
+                    value_loss = F.mse_loss(value_pred.view(-1), values)
 
                     loss = policy_loss + value_loss
 
