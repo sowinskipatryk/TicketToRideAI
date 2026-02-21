@@ -2,7 +2,7 @@
 
 # NEAT Training Configuration
 neat:
-  players_num: 4
+  players_num: 2
   game_version: "USA"  # Options: USA, Europe
   num_generations: 20
   max_moves_per_game: 1000
