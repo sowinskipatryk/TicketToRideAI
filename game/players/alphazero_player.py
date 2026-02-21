@@ -21,9 +21,9 @@ class AlphaZeroPlayer(BasePlayer):
 
     DEFAULT_ITERATIONS = 200
 
-    def __init__(self, color_index, game, adapter, model_path=None, iterations=None,
+    def __init__(self, color_index, game, model_path=None, iterations=None,
                  device=None, hidden_size=256, num_res_blocks=4):
-        super().__init__(color_index, game, adapter)
+        super().__init__(color_index, game)
 
         # Lazy imports to avoid circular dependency
         from alphazero.network import AlphaZeroNet

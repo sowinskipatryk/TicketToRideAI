@@ -6,7 +6,6 @@ from game.enums import ActionDecision
 from game.enums import TrainCardDecision, PlayerColor
 from game.ticket_deck import Ticket
 from game.game_logger import logger
-from neuroevolution.adapters.blank_adapter import BlankAdapter
 
 if TYPE_CHECKING:
     from game.core import Game
@@ -18,7 +17,7 @@ class BasePlayer(ABC):
     Defines the interface and common functionality for players.
     Subclasses must implement decision-making methods.
     """
-    def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter) -> None:
+    def __init__(self, color_index: int, game: 'Game') -> None:
         """Initialize a player.
         
         Args:
@@ -34,9 +33,6 @@ class BasePlayer(ABC):
         self.score = 0
         self.trains_remaining = self.game.config.NUM_TRAIN_FIGURES
         self.longest_path = False
-        self.adapter = adapter
-
-        self.set_trains_num_adapter()
 
     def __str__(self) -> str:
         return str(self.color)
@@ -68,13 +64,11 @@ class BasePlayer(ABC):
 
     def add_ticket(self, ticket: Ticket) -> None:
         self.tickets[ticket] = False
-        self.adapter.set_ticket_owner(self.player_id, ticket)
 
     def complete_ticket(self, ticket: Ticket) -> None:
         if ticket not in self.tickets:
             raise ValueError(f'Ticket: {ticket} not found')
         self.tickets[ticket] = True
-        self.adapter.set_ticket_completed(self.player_id, ticket)
 
     def score_tickets(self) -> None:
         for ticket, completed in self.tickets.items():
@@ -91,20 +85,16 @@ class BasePlayer(ABC):
             cards = [cards]
         for card in cards:
             self.hand[card] += 1
-            self.set_cards_num_adapter(card)
 
     def remove_cards_from_hand(self, color: str, num_color: int) -> None:
         if self.hand[color] < num_color:
             raise ValueError('Not enough cards of the specified color')
         self.hand[color] -= num_color
 
-        self.set_cards_num_adapter(color)
-
     def play_num_trains(self, num_trains: int) -> None:
         if num_trains > self.trains_remaining:
             raise ValueError('Not enough train figures')
         self.trains_remaining -= num_trains
-        self.set_trains_num_adapter()
 
     def add_points(self, points_num: int) -> None:
         self.score += points_num
@@ -225,9 +215,6 @@ class BasePlayer(ABC):
         self.add_points(self.game.get_route_value(route_dist))
         self.check_completed_tickets()
 
-        self.adapter.set_trains_num(self.player_id, self.trains_remaining)
-        self.adapter.set_route_owner(self.player_id, route_link_id)
-
         return True
 
     def check_completed_tickets(self) -> None:
@@ -235,15 +222,6 @@ class BasePlayer(ABC):
             if not completed and self.game.board.is_ticket_completed(self.color, ticket):
                 logger.info('TICKET_COMPLETED!')
                 self.complete_ticket(ticket)
-
-    def set_trains_num_adapter(self):
-        self.adapter.set_trains_num(self.player_id, self.trains_remaining)
-
-    def set_cards_num_adapter(self, card):
-        if card == 'wild':
-            self.adapter.set_wild_cards_num(self.player_id, self.hand[card])
-        else:
-            self.adapter.set_color_cards_num(self.player_id, card, self.hand[card])
 
     @abstractmethod
     def decide_tickets(self, min_keep: int, tickets: List[Ticket]) -> Tuple[List[int], List[int]]:

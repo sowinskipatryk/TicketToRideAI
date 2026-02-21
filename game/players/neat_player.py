@@ -1,85 +1,96 @@
-import math
+"""NEAT-based AI player using a neural network as a state evaluation function.
+
+Uses 1-step greedy lookahead: for each legal action, simulate it on a cloned
+SimState, encode the resulting state (same 389-feature encoding as AlphaZero),
+evaluate with the NEAT network (single output in [-1, 1]), pick the best action.
+"""
+from typing import List, Tuple, TYPE_CHECKING
 
 from neat.nn import FeedForwardNetwork
 
+from game.enums import TrainCardDecision
 from game.game_logger import logger
 from game.players.base_player import BasePlayer
-from neuroevolution.adapters.blank_adapter import BlankAdapter
-from neuroevolution.decisions import NetworkDecisions
+from game.players.route_utils import decide_tickets_by_distance
+from game.ticket_deck import Ticket
+from mcts.sim_game import from_game, get_legal_actions, clone, apply_action
+from alphazero.encoding import encode_state
+
+if TYPE_CHECKING:
+    from game.core import Game
 
 
 class NEATPlayer(BasePlayer):
-    """NEAT-based AI player that uses neural networks to make decisions."""
-    
-    # Threshold for binary decisions (e.g., ticket keeping)
-    TICKET_DECISION_THRESHOLD = 0.5
-    
-    def __init__(self, color_index: int, game: 'Game', adapter: BlankAdapter, network: FeedForwardNetwork = None):
-        super().__init__(color_index, game, adapter)
+    """NEAT-based AI player that uses a neural network as a state evaluation function.
+
+    Action selection via 1-step greedy lookahead:
+      1. Convert live Game to SimState via from_game()
+      2. Get all legal actions
+      3. For each action: clone state, apply action, encode, run NEAT network
+      4. Pick the action with the highest value output (in [-1, 1])
+
+    Uses the same 389-feature input encoding as AlphaZero so both methods
+    see identical information about the game state.
+    """
+
+    def __init__(self, color_index: int, game: 'Game', network: FeedForwardNetwork = None):
+        super().__init__(color_index, game)
         self.network = network
+        self._chosen_action = None
+        self._card_draw_count = 0
 
-    def decide_route(self):
-        decision_array = self.get_decision_array()
-        logger.debug(f'route values: {decision_array[NetworkDecisions.ROUTE_DECISION_ID:NetworkDecisions.COLOR_DECISION_ID]}')
-        route_values = decision_array[NetworkDecisions.ROUTE_DECISION_ID:NetworkDecisions.COLOR_DECISION_ID]
-        return self.get_max_value_index(route_values)
+    def decide_action(self) -> int:
+        """Run 1-step greedy lookahead, cache the best action, return its type."""
+        state = from_game(self.game)
+        legal = get_legal_actions(state)
 
-    def decide_cards_color(self):
-        decision_array = self.get_decision_array()
-        color_values = decision_array[NetworkDecisions.COLOR_DECISION_ID:NetworkDecisions.TRAIN_CARD_DECISION_ID]
-        return self.get_max_value_index(color_values)
+        if not legal:
+            self._chosen_action = None
+            return 3  # SKIP
 
-    def decide_train_card(self):
-        decision_array = self.get_decision_array()
-        card_values = decision_array[NetworkDecisions.TRAIN_CARD_DECISION_ID:NetworkDecisions.TICKET_DECISION_ID]
-        logger.debug(f'card decision values: {decision_array[NetworkDecisions.TRAIN_CARD_DECISION_ID:NetworkDecisions.TICKET_DECISION_ID]}')
-        return self.get_max_value_index(card_values)
+        best_action = None
+        best_value = float('-inf')
+        for action in legal:
+            s = clone(state)
+            apply_action(s, action)
+            features = encode_state(s, self.player_id).tolist()
+            value = self.network.activate(features)[0]
+            if value > best_value:
+                best_value = value
+                best_action = action
 
-    def decide_ticket(self):
-        decision_array = self.get_decision_array()
-        ticket_value = decision_array[NetworkDecisions.TICKET_DECISION_ID]
-        logger.debug(f'ticket decision value: {decision_array[NetworkDecisions.TICKET_DECISION_ID]}')
-        return self.is_active(ticket_value, self.TICKET_DECISION_THRESHOLD)
+        self._chosen_action = best_action
+        self._card_draw_count = 0
+        logger.debug(f'NEATPlayer chose action {best_action} (value={best_value:.3f})')
+        return best_action.action_type
 
-    def decide_action(self):
-        decision_array = self.get_decision_array()
-        action_values = decision_array[NetworkDecisions.ACTION_DECISION_ID:NetworkDecisions.LOCOMOTIVE_DECISION_ID]
-        logger.debug(f'action decision values: {decision_array[NetworkDecisions.ACTION_DECISION_ID:NetworkDecisions.LOCOMOTIVE_DECISION_ID]}')
-        return self.get_max_value_index(action_values)
+    def decide_route(self) -> int:
+        if self._chosen_action and self._chosen_action.action_type == 0:
+            return self._chosen_action.link_id
+        return 0
 
-    def decide_wild_cards(self):
-        decision_array = self.get_decision_array()
-        locomotive_value = decision_array[NetworkDecisions.LOCOMOTIVE_DECISION_ID]
-        return math.floor(locomotive_value * self.hand.get('wild', 0))
+    def decide_cards_color(self) -> int:
+        if self._chosen_action and self._chosen_action.color:
+            try:
+                return self.game.config.TRAIN_COLORS.index(self._chosen_action.color)
+            except ValueError:
+                pass
+        return max(range(len(self.game.config.TRAIN_COLORS)),
+                   key=lambda i: self.hand.get(self.game.config.TRAIN_COLORS[i], 0))
 
-    def decide_tickets(self, min_keep, tickets):
-        ticket_decision_values = [(i, self.decide_ticket()) for i in range(len(tickets))]
-        chosen_tickets_num = sum(self.is_active(value) for _, value in ticket_decision_values)
-        kept_tickets_num = max(min_keep, chosen_tickets_num)
-        ticket_decision_values.sort(key=lambda x: x[1], reverse=True)
-        ticket_decision_indices = [i for i, v in ticket_decision_values]
-        return ticket_decision_indices[:kept_tickets_num], ticket_decision_indices[kept_tickets_num:]
+    def decide_wild_cards(self) -> int:
+        if self._chosen_action and self._chosen_action.action_type == 0:
+            return self._chosen_action.wilds
+        return 0
 
-    def get_input_array(self):
-        return self.adapter.get_state_array(self.player_id)
+    def decide_train_card(self) -> int:
+        if self._card_draw_count == 0 and self._chosen_action and self._chosen_action.action_type == 2:
+            self._card_draw_count += 1
+            choice = self._chosen_action.card_choice
+            if 0 <= choice <= 5:
+                return choice
+        self._card_draw_count += 1
+        return TrainCardDecision.DRAW_PILE.value
 
-    def get_decision_array(self):
-        return self.network.activate(self.get_input_array())
-
-    @staticmethod
-    def get_max_value_index(values_list):
-        max_value = max(values_list)
-        return values_list.index(max_value)
-
-    @staticmethod
-    def is_active(value: float, threshold: float = TICKET_DECISION_THRESHOLD) -> int:
-        """Determine if a value is active based on threshold.
-        
-        Args:
-            value: The value to check
-            threshold: The threshold value (defaults to class constant)
-            
-        Returns:
-            1 if value >= threshold, 0 otherwise
-        """
-        return 1 if value >= threshold else 0
+    def decide_tickets(self, min_keep: int, tickets: List[Ticket]) -> Tuple[List[int], List[int]]:
+        return decide_tickets_by_distance(self, min_keep, tickets)

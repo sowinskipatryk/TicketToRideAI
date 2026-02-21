@@ -48,12 +48,10 @@ class TicketDeck:
 
     def insert(self, ticket: Ticket) -> None:
         self._ticket_deck.append(ticket)
-        self.set_ticket_pile_num_adapter()
 
     def remove(self) -> Optional[Ticket]:
         if not self.is_empty():
             ticket = self._ticket_deck.popleft()
-            self.set_ticket_pile_num_adapter()
             return ticket
         else:
             logger.info('Ticket deck is empty!')
@@ -64,6 +62,3 @@ class TicketDeck:
 
     def is_empty(self) -> bool:
         return self.tickets_left == 0
-
-    def set_ticket_pile_num_adapter(self):
-        self.game.adapter.set_ticket_pile_num(self.tickets_left)

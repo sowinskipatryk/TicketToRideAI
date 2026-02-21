@@ -18,8 +18,8 @@ class MCTSPlayer(BasePlayer):
 
     DEFAULT_ITERATIONS = 400
 
-    def __init__(self, color_index, game, adapter, iterations=None):
-        super().__init__(color_index, game, adapter)
+    def __init__(self, color_index, game, iterations=None):
+        super().__init__(color_index, game)
         iters = iterations or self.DEFAULT_ITERATIONS
         self.mcts = ISMCTS(
             iterations=iters,

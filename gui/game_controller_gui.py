@@ -101,8 +101,6 @@ class GameControllerGUI(QObject):
         """Perform initial game setup: draw cards and tickets for all players."""
         game = self.game_controller.game
         
-        # Set up ticket deck adapter
-        game.ticket_deck.set_ticket_pile_num_adapter()
         
         # Process initial setup for each player
         self.setup_next_player()

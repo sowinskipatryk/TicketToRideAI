@@ -1,4 +1,4 @@
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from neat.nn.feed_forward import FeedForwardNetwork
 
@@ -15,32 +15,25 @@ from game.players.mcts_player import MCTSPlayer
 from game.players.alphazero_player import AlphaZeroPlayer
 
 from neuroevolution.manager import load_network
-from neuroevolution.adapters.blank_adapter import BlankAdapter
-from neuroevolution.adapters.network_adapter import NetworkAdapter
 
 if TYPE_CHECKING:
     from game.core import Game
 
 
 class PlayerFactory:
-    def create_players(self, player_types: List[str], game: 'Game', networks: List[FeedForwardNetwork] = None, ui_interface=None) -> Tuple[List[BasePlayer], BlankAdapter]:
-        adapter = self.determine_adapter(player_types, game)
+    def create_players(self, player_types: List[str], game: 'Game',
+                       networks: List[FeedForwardNetwork] = None,
+                       ui_interface=None) -> List[BasePlayer]:
         players = []
         for index, player_type in enumerate(player_types):
             network = networks[index] if networks else None
-            player = self.create_player(index, player_type, game, adapter, network, ui_interface=ui_interface)
+            player = self.create_player(index, player_type, game, network, ui_interface=ui_interface)
             players.append(player)
-        return players, adapter
+        return players
 
     @staticmethod
-    def determine_adapter(player_types: List[str], game: 'Game') -> BlankAdapter:
-        if any(player_type == PlayerType.NEAT.value for player_type in player_types):
-            return NetworkAdapter(game)
-        else:
-            return BlankAdapter()
-
-    @staticmethod
-    def create_player(index: int, type_: str, game, adapter: BlankAdapter, network: FeedForwardNetwork = None, ui_interface=None) -> BasePlayer:
+    def create_player(index: int, type_: str, game, network: FeedForwardNetwork = None,
+                      ui_interface=None) -> BasePlayer:
         try:
             player_type = PlayerType(type_)
         except ValueError:
@@ -56,15 +49,15 @@ class PlayerFactory:
             PlayerType.BLOCKER: BlockerAgent,
             PlayerType.MCTS: MCTSPlayer,
             PlayerType.ALPHAZERO: AlphaZeroPlayer,
-            }
+        }
 
         player_class = player_types.get(player_type)
 
         if player_type == PlayerType.NEAT:
             if network is None:
                 network = load_network()
-            return player_class(index, game, adapter, network)
+            return player_class(index, game, network)
         elif player_type == PlayerType.HUMAN:
-            return player_class(index, game, adapter, ui_interface=ui_interface)
+            return player_class(index, game, ui_interface=ui_interface)
 
-        return player_class(index, game, adapter)
+        return player_class(index, game)

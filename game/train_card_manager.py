@@ -24,10 +24,8 @@ class TrainCardManager:
         self.game = game
 
         self._draw_pile = self._create_draw_pile()
-        self.set_draw_pile_num_adapter()
 
         self._discard_pile = []
-        self.set_discard_pile_num_adapter()
 
         self._face_up_cards = [None] * 5
         self._wild_card_count = 0  # Track wild cards in face-up pile for efficiency
@@ -57,7 +55,6 @@ class TrainCardManager:
             self._face_up_cards[card_id] = None
             if card == self.WILD_CARD:
                 self._wild_card_count -= 1
-            self.set_face_up_card_adapter(card_id, None)
 
             self.fill_face_up()
             return card
@@ -69,7 +66,6 @@ class TrainCardManager:
 
         if len(self._draw_pile) != 0:
             card = self._draw_pile.pop()
-            self.set_draw_pile_num_adapter()
             return card
         return None
 
@@ -88,7 +84,6 @@ class TrainCardManager:
                 self._face_up_cards[closest_none_id] = card
                 if card == self.WILD_CARD:
                     self._wild_card_count += 1
-                self.set_face_up_card_adapter(closest_none_id, card)
 
             if self._wild_card_count >= self.game.config.MAX_WILD_CARDS and tries < 5:
                 logger.debug('Too many wild cards on the table. Discarding face up cards...')
@@ -114,29 +109,12 @@ class TrainCardManager:
         random.shuffle(self._draw_pile)
 
         self._discard_pile = []
-        self.set_discard_pile_num_adapter()
 
     def add_to_discard_pile(self, cards: List[str]) -> None:
         if cards:
             logger.debug(f'add_to_discard: {cards}')
         for card in cards:
             self._discard_pile.append(card)
-        self.set_discard_pile_num_adapter()
 
     def _log_state(self) -> None:
         logger.debug(f'face_up: {len(self._face_up_cards)} draw: {len(self._draw_pile)} discard: {len(self._discard_pile)}')
-
-    def set_draw_pile_num_adapter(self):
-        self.game.adapter.set_draw_pile_num(len(self._draw_pile))
-
-    def set_discard_pile_num_adapter(self):
-        self.game.adapter.set_discard_pile_num(len(self._discard_pile))
-
-    def set_face_up_card_adapter(self, card_id, card):
-        if card == self.WILD_CARD:
-            color_id = len(self.game.config.TRAIN_COLORS)
-        elif card is None:
-            color_id = len(self.game.config.TRAIN_COLORS) + 1
-        else:
-            color_id = self.game.config.TRAIN_COLORS.index(card)
-        self.game.adapter.set_face_up_card(card_id, color_id)

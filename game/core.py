@@ -48,7 +48,7 @@ class Game:
         self.ticket_deck = TicketDeck(self)
 
         self.player_factory = PlayerFactory()
-        self.players, self.adapter = self.player_factory.create_players(player_types, self, networks, ui_interface=ui_interface)
+        self.players = self.player_factory.create_players(player_types, self, networks, ui_interface=ui_interface)
 
         self.train_card_manager = TrainCardManager(self)
 
@@ -95,7 +95,6 @@ class Game:
 
     def _deal_initial(self) -> None:
         """Deal initial cards and tickets to all players, transition to RUNNING state."""
-        self.ticket_deck.set_ticket_pile_num_adapter()
         self.game_state = GameState.RUNNING
         logger.info(self.game_state)
         for player in self.players:

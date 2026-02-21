@@ -30,7 +30,6 @@ def run_instrumented_game(
     collector.start_game(game_id, version, player_types)
 
     # === Initialization (mirrors core.py lines 97-104) ===
-    game.ticket_deck.set_ticket_pile_num_adapter()
     game.game_state = GameState.RUNNING
 
     for player in game.players:

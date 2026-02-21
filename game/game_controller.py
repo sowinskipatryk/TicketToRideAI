@@ -216,7 +216,6 @@ class GameController:
             Game statistics dictionary
         """
         # Initialize game
-        self.game.ticket_deck.set_ticket_pile_num_adapter()
         self.game.game_state = GameState.RUNNING
         
         for player in self.game.players:

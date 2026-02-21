@@ -11,7 +11,7 @@ class HumanPlayer(BasePlayer):
     When used in CLI mode, it uses CLI interface.
     """
     
-    def __init__(self, color_index: int, game: 'Game', adapter, ui_interface=None):
+    def __init__(self, color_index: int, game: 'Game', ui_interface=None):
         """Initialize human player.
         
         Args:
@@ -20,7 +20,7 @@ class HumanPlayer(BasePlayer):
             adapter: Network adapter
             ui_interface: Optional UI interface (CLI or GUI). If None, detects automatically.
         """
-        super().__init__(color_index, game, adapter)
+        super().__init__(color_index, game)
         self.ui_interface = ui_interface
         self._pending_ticket_decision = None  # For GUI ticket selection
     
