@@ -104,14 +104,14 @@ class TrainingReporter(neat.reporting.BaseReporter):
         pass  # suppress NEAT's internal info messages
 
 
-def _calibrate(genome, config, num_games: int = 6) -> float:
+def _calibrate(genome, config, num_games: int = 10) -> float:
     """Measure absolute strength vs GreedyRouteAgent (num_games total, alternating sides).
 
     Self-play fitness deflates as all genomes improve together. This gives a
     stable external reference — if vs-Greedy score rises over generations,
     the population is genuinely getting better.
 
-    num_games=6 (3 per side) reduces variance enough to see a real trend.
+    num_games=10 (5 per side) reduces variance enough to see a real trend.
     """
     from game.core import Game
     network = neat.nn.FeedForwardNetwork.create(genome, config)
