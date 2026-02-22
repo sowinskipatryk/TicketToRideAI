@@ -77,23 +77,34 @@ class TrainingReporter(neat.reporting.BaseReporter):
         elapsed = time.time() - self._gen_start
         num_species = len(species_set.species)
         best_nodes = len(best_genome.nodes)
-        calibration = _calibrate(best_genome, config)
-        if calibration > self._best_calibration:
-            self._best_calibration = calibration
-            self.best_genome = copy.deepcopy(best_genome)
+
+        # Calibrate top 3 by self-play fitness; pick the best vs Greedy among them.
+        # This guards against the case where the self-play winner got lucky against a weak opponent.
+        top3 = sorted(population.values(), key=lambda g: g.fitness, reverse=True)[:3]
+        best_cal_score = float('-inf')
+        best_cal_genome = None
+        for g in top3:
+            cal = _calibrate(g, config)
+            if cal > best_cal_score:
+                best_cal_score = cal
+                best_cal_genome = g
+
+        if best_cal_score > self._best_calibration:
+            self._best_calibration = best_cal_score
+            self.best_genome = copy.deepcopy(best_cal_genome)
             save_genome(self.best_genome)
         self.training_log.append({
             'generation': self.generation + 1,
             'best_fitness': best_genome.fitness,
             'best_calibration': round(self._best_calibration, 2),
-            'vs_greedy': round(calibration, 2),
+            'vs_greedy': round(best_cal_score, 2),
         })
         with open(self.log_path, 'w') as f:
             json.dump(self.training_log, f, indent=2)
         print(
             f"Gen {self.generation + 1:2d}/{self.num_generations} | "
             f"Best: {best_genome.fitness:+7.1f} | "
-            f"vs Greedy: {calibration:+6.1f} | "
+            f"vs Greedy: {best_cal_score:+6.1f} | "
             f"Best vs Greedy: {self._best_calibration:+6.1f} | "
             f"Species: {num_species:2d} | "
             f"Nodes: {best_nodes:3d} | "
