@@ -35,7 +35,7 @@ try:
 except (ImportError, Exception):
     # Default values if config loading fails
     CONFIG_FILENAME = "neat_config.txt"
-    GENOME_FILENAME = 'best_genome.pkl'
+    GENOME_FILENAME = os.path.join(CHECKPOINT_DIR, 'best_genome.pkl')
     PLAYERS_NUM = 2
     GAME_VERSION = 'USA'
     NUM_GENERATIONS = 100
@@ -192,6 +192,7 @@ def eval_genomes(genomes, config):
 
 
 def save_genome(genome):
+    os.makedirs(os.path.dirname(GENOME_FILENAME), exist_ok=True)
     with open(GENOME_FILENAME, 'wb') as file:
         pickle.dump(genome, file)
 
