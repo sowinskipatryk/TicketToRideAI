@@ -40,7 +40,7 @@ def get_default_config() -> Dict[str, Any]:
             'num_generations': 20,
             'max_moves_per_game': 1000,
             'config_filename': 'neuroevolution/neat_config.txt',
-            'genome_filename': 'best_genome.pkl'
+            'genome_filename': 'checkpoints/neat/best_genome.pkl'
         },
         'logging': {
             'console_level': 'DEBUG',

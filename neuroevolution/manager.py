@@ -27,7 +27,7 @@ try:
     _config = load_config()
     _neat_config = _config.get('neat', {})
     CONFIG_FILENAME = _neat_config.get('config_filename', 'neuroevolution/neat_config.txt')
-    GENOME_FILENAME = _neat_config.get('genome_filename', 'best_genome.pkl')
+    GENOME_FILENAME = _neat_config.get('genome_filename', os.path.join(CHECKPOINT_DIR, 'best_genome.pkl'))
     PLAYERS_NUM = _neat_config.get('players_num', 2)
     GAME_VERSION = _neat_config.get('game_version', 'USA')
     NUM_GENERATIONS = _neat_config.get('num_generations', 20)
