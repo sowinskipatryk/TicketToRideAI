@@ -57,7 +57,6 @@ class TrainingReporter(neat.reporting.BaseReporter):
         self.log_path = log_path
         self.generation = 0
         self._gen_start = None
-        self._best_ever = float('-inf')
         self._best_calibration = float('-inf')  # guards best_genome: immune to early opponent inflation
         self.best_genome = None  # genome with highest vs-Greedy calibration score seen this session
         self.training_log: list = []
@@ -68,7 +67,7 @@ class TrainingReporter(neat.reporting.BaseReporter):
             # discarding any entries from generations that ran after the checkpoint.
             self.training_log = [e for e in full_log if e['generation'] <= start_generation]
             if self.training_log:
-                self._best_ever = max(e['all_time_best'] for e in self.training_log)
+                self._best_calibration = max(e['best_calibration'] for e in self.training_log)
 
     def start_generation(self, generation):
         self.generation = generation
@@ -76,8 +75,6 @@ class TrainingReporter(neat.reporting.BaseReporter):
 
     def post_evaluate(self, config, population, species_set, best_genome):
         elapsed = time.time() - self._gen_start
-        if best_genome.fitness > self._best_ever:
-            self._best_ever = best_genome.fitness
         num_species = len(species_set.species)
         best_nodes = len(best_genome.nodes)
         calibration = _calibrate(best_genome, config)
@@ -88,7 +85,7 @@ class TrainingReporter(neat.reporting.BaseReporter):
         self.training_log.append({
             'generation': self.generation + 1,
             'best_fitness': best_genome.fitness,
-            'all_time_best': self._best_ever,
+            'best_calibration': round(self._best_calibration, 2),
             'vs_greedy': round(calibration, 2),
         })
         with open(self.log_path, 'w') as f:
@@ -96,8 +93,8 @@ class TrainingReporter(neat.reporting.BaseReporter):
         print(
             f"Gen {self.generation + 1:2d}/{self.num_generations} | "
             f"Best: {best_genome.fitness:+7.1f} | "
-            f"All-time: {self._best_ever:+7.1f} | "
             f"vs Greedy: {calibration:+6.1f} | "
+            f"Best vs Greedy: {self._best_calibration:+6.1f} | "
             f"Species: {num_species:2d} | "
             f"Nodes: {best_nodes:3d} | "
             f"Time: {elapsed:.1f}s"
@@ -199,20 +196,20 @@ def _save_plot(training_log: list, filename: str):
 
         generations = [e['generation'] for e in training_log]
         best_per_gen = [e['best_fitness'] for e in training_log]
-        running_best = [e['all_time_best'] for e in training_log]
         vs_greedy = [e['vs_greedy'] for e in training_log]
+        best_calibration = [e['best_calibration'] for e in training_log]
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
         ax1.plot(generations, best_per_gen, 'b-o', label='Best this gen', markersize=4, alpha=0.6)
-        ax1.plot(generations, running_best, 'g-', label='All-time best', linewidth=2)
         ax1.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
         ax1.set_ylabel('Self-play fitness')
         ax1.set_title('NEAT Training Progress')
         ax1.legend()
         ax1.grid(True, alpha=0.3)
 
-        ax2.plot(generations, vs_greedy, 'r-o', label='vs Greedy (absolute)', markersize=4)
+        ax2.plot(generations, vs_greedy, 'r-o', label='vs Greedy', markersize=4, alpha=0.6)
+        ax2.plot(generations, best_calibration, 'g-', label='Best vs Greedy ever', linewidth=2)
         ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
         ax2.set_ylabel('Score diff vs Greedy')
         ax2.set_xlabel('Generation')
@@ -249,7 +246,7 @@ def run_neat(resume_checkpoint: str = None):
         population = neat.Population(cnf)
         generations_to_run = NUM_GENERATIONS
 
-    print(f"NEAT Training | pop={cnf.pop_size} | generations={NUM_GENERATIONS} | "
+    print(f"NEAT Training | population={cnf.pop_size} | generations={NUM_GENERATIONS} | "
           f"players={PLAYERS_NUM} | version={GAME_VERSION}\n")
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
@@ -263,5 +260,5 @@ def run_neat(resume_checkpoint: str = None):
 
     population.run(eval_genomes, generations_to_run)
 
-    print(f"\nTraining complete | Best fitness: {reporter._best_ever:+.1f} | Saved: {GENOME_FILENAME}")
+    print(f"\nTraining complete | Best vs Greedy: {reporter._best_calibration:+.1f} | Saved: {GENOME_FILENAME}")
     _save_plot(reporter.training_log, plot_path)
