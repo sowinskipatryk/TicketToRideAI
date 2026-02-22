@@ -255,8 +255,12 @@ def run_neat(resume_checkpoint: str = None):
     plot_path = os.path.join(CHECKPOINT_DIR, 'training_progress.png')
 
     reporter = TrainingReporter(NUM_GENERATIONS, log_path, start_generation)
+    checkpointer = _Checkpointer(generation_interval=10, filename_prefix=checkpoint_prefix)
+    # Align the interval to the resume point so the next checkpoint lands at
+    # start_generation + 10, not at start_generation + 1.
+    checkpointer.last_generation_checkpoint = population.generation - 1
     population.add_reporter(reporter)
-    population.add_reporter(_Checkpointer(generation_interval=10, filename_prefix=checkpoint_prefix))
+    population.add_reporter(checkpointer)
 
     population.run(eval_genomes, generations_to_run)
 
