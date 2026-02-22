@@ -47,7 +47,7 @@ def _load_network_from(path: str):
     from neuroevolution.manager import CONFIG_FILENAME
     with open(path, 'rb') as f:
         genome = pickle.load(f)
-    config_path = str(Path(__file__).resolve().parent.parent / 'neuroevolution' / CONFIG_FILENAME)
+    config_path = str(Path(__file__).resolve().parent.parent / CONFIG_FILENAME)
     cnf = neat_lib.Config(neat_lib.DefaultGenome, neat_lib.DefaultReproduction,
                           neat_lib.DefaultSpeciesSet, neat_lib.DefaultStagnation,
                           config_path)
