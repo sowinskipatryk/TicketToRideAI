@@ -78,7 +78,7 @@ class TrainingReporter(neat.reporting.BaseReporter):
         num_species = len(species_set.species)
         best_nodes = len(best_genome.nodes)
 
-        # Calibrate top 3 by self-play fitness; pick the best vs Greedy among them.
+        # Calibrate top 3 by self-play fitness; pick the best vs TicketFocused among them.
         # This guards against the case where the self-play winner got lucky against a weak opponent.
         top3 = sorted(population.values(), key=lambda g: g.fitness, reverse=True)[:3]
         best_cal_score = float('-inf')
@@ -97,15 +97,15 @@ class TrainingReporter(neat.reporting.BaseReporter):
             'generation': self.generation + 1,
             'best_fitness': best_genome.fitness,
             'best_calibration': round(self._best_calibration, 2),
-            'vs_greedy': round(best_cal_score, 2),
+            'vs_ticketFocused': round(best_cal_score, 2),
         })
         with open(self.log_path, 'w') as f:
             json.dump(self.training_log, f, indent=2)
         print(
             f"Gen {self.generation + 1:2d}/{self.num_generations} | "
             f"Best: {best_genome.fitness:+7.1f} | "
-            f"vs Greedy: {best_cal_score:+6.1f} | "
-            f"Best vs Greedy: {self._best_calibration:+6.1f} | "
+            f"vs TicketFocused: {best_cal_score:+6.1f} | "
+            f"Best vs TicketFocused: {self._best_calibration:+6.1f} | "
             f"Species: {num_species:2d} | "
             f"Nodes: {best_nodes:3d} | "
             f"Time: {elapsed:.1f}s"
@@ -116,10 +116,10 @@ class TrainingReporter(neat.reporting.BaseReporter):
 
 
 def _calibrate(genome, config, num_games: int = 10) -> float:
-    """Measure absolute strength vs GreedyRouteAgent (num_games total, alternating sides).
+    """Measure absolute strength vs TicketFocused (num_games total, alternating sides).
 
     Self-play fitness deflates as all genomes improve together. This gives a
-    stable external reference — if vs-Greedy score rises over generations,
+    stable external reference — if vs-TicketFocused score rises over generations,
     the population is genuinely getting better.
 
     num_games=10 (5 per side) reduces variance enough to see a real trend.
@@ -130,12 +130,12 @@ def _calibrate(genome, config, num_games: int = 10) -> float:
     total = 0
     for i in range(num_games):
         if i % 2 == 0:
-            g = Game(player_types=['NEAT', 'Greedy'], version=GAME_VERSION,
+            g = Game(player_types=['NEAT', 'TicketFocused'], version=GAME_VERSION,
                      networks=[network, None])
             s = g.play(max_moves=MAX_MOVES_PER_GAME)
             total += s['score'][0] - s['score'][1]
         else:
-            g = Game(player_types=['Greedy', 'NEAT'], version=GAME_VERSION,
+            g = Game(player_types=['TicketFocused', 'NEAT'], version=GAME_VERSION,
                      networks=[None, network])
             s = g.play(max_moves=MAX_MOVES_PER_GAME)
             total += s['score'][1] - s['score'][0]
@@ -208,7 +208,7 @@ def _save_plot(training_log: list, filename: str):
 
         generations = [e['generation'] for e in training_log]
         best_per_gen = [e['best_fitness'] for e in training_log]
-        vs_greedy = [e['vs_greedy'] for e in training_log]
+        vs_greedy = [e['vs_ticketFocused'] for e in training_log]
         best_calibration = [e['best_calibration'] for e in training_log]
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
@@ -220,10 +220,10 @@ def _save_plot(training_log: list, filename: str):
         ax1.legend()
         ax1.grid(True, alpha=0.3)
 
-        ax2.plot(generations, vs_greedy, 'r-o', label='vs Greedy', markersize=4, alpha=0.6)
-        ax2.plot(generations, best_calibration, 'g-', label='Best vs Greedy ever', linewidth=2)
+        ax2.plot(generations, vs_greedy, 'r-o', label='vs TicketFocused', markersize=4, alpha=0.6)
+        ax2.plot(generations, best_calibration, 'g-', label='Best vs TicketFocused ever', linewidth=2)
         ax2.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
-        ax2.set_ylabel('Score diff vs Greedy')
+        ax2.set_ylabel('Score diff vs TicketFocused')
         ax2.set_xlabel('Generation')
         ax2.legend()
         ax2.grid(True, alpha=0.3)
@@ -276,5 +276,5 @@ def run_neat(resume_checkpoint: str = None):
 
     population.run(eval_genomes, generations_to_run)
 
-    print(f"\nTraining complete | Best vs Greedy: {reporter._best_calibration:+.1f} | Saved: {GENOME_FILENAME}")
+    print(f"\nTraining complete | Best vs TicketFocused: {reporter._best_calibration:+.1f} | Saved: {GENOME_FILENAME}")
     _save_plot(reporter.training_log, plot_path)
