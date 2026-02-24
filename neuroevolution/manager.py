@@ -45,11 +45,12 @@ except (ImportError, Exception):
 class TrainingReporter(neat.reporting.BaseReporter):
     """Compact one-line-per-generation reporter.
 
-    Shows running best instead of average fitness — average is always 0.0
-    in 2-player zero-sum pairing (one genome's gain = opponent's loss).
+    Fitness = 0.5 * score_diff_vs_NEAT + 0.5 * score_diff_vs_TicketFocused,
+    so the population average is negative (TicketFocused beats most genomes).
+    Best fitness per generation is shown, not average.
 
-    Also runs 2 calibration games per generation against GreedyRouteAgent
-    to track absolute improvement independent of opponent strength.
+    Also calibrates top-3 genomes vs TicketFocused (10 games) each generation
+    to track absolute improvement and select the best genome to save.
     """
 
     def __init__(self, num_generations: int, log_path: str, start_generation: int = 0):
@@ -166,13 +167,12 @@ def eval_genomes(genomes, config):
     for _, genome in genomes:
         genome.fitness = 0.0  # default for any unpaired genome (when pop_size is odd)
 
+    # Phase 1: NEAT-vs-NEAT pairing (two rotations to average out first-player advantage).
+    neat_scores = {}
     for i in range(0, len(genomes) - (len(genomes) % PLAYERS_NUM), PLAYERS_NUM):
         genome_pairs = [genomes[i + j] for j in range(PLAYERS_NUM)]
         networks = [neat.nn.FeedForwardNetwork.create(genome, config)
                     for _, genome in genome_pairs]
-
-        # Accumulate score differences over two games with swapped starting positions.
-        # This averages out first-player advantage and random card luck.
         score_diffs = [0] * PLAYERS_NUM
         for rotation in range(PLAYERS_NUM):
             rotated_networks = networks[rotation:] + networks[:rotation]
@@ -180,15 +180,32 @@ def eval_genomes(genomes, config):
                         networks=rotated_networks)
             stats = game.play(max_moves=MAX_MOVES_PER_GAME)
             rotated_scores = stats['score']
-            # Map rotated positions back to original genome indices
             for pos in range(PLAYERS_NUM):
                 original_j = (pos - rotation) % PLAYERS_NUM
                 opp_score = max(rotated_scores[k] for k in range(PLAYERS_NUM) if k != pos)
                 score_diffs[original_j] += rotated_scores[pos] - opp_score
-
         for j in range(PLAYERS_NUM):
-            _, genome = genome_pairs[j]
-            genome.fitness = score_diffs[j] / PLAYERS_NUM
+            gid, _ = genome_pairs[j]
+            neat_scores[gid] = score_diffs[j] / PLAYERS_NUM
+
+    # Phase 2: Every genome plays 1 game vs TicketFocused (alternating sides across population).
+    tf_scores = {}
+    for idx, (gid, genome) in enumerate(genomes):
+        network = neat.nn.FeedForwardNetwork.create(genome, config)
+        if idx % 2 == 0:
+            g = Game(player_types=['NEAT', 'TicketFocused'], version=GAME_VERSION,
+                     networks=[network, None])
+            s = g.play(max_moves=MAX_MOVES_PER_GAME)
+            tf_scores[gid] = s['score'][0] - s['score'][1]
+        else:
+            g = Game(player_types=['TicketFocused', 'NEAT'], version=GAME_VERSION,
+                     networks=[None, network])
+            s = g.play(max_moves=MAX_MOVES_PER_GAME)
+            tf_scores[gid] = s['score'][1] - s['score'][0]
+
+    # Combine: 50% NEAT-vs-NEAT + 50% vs TicketFocused.
+    for gid, genome in genomes:
+        genome.fitness = 0.5 * neat_scores.get(gid, 0.0) + 0.5 * tf_scores.get(gid, 0.0)
 
 
 def save_genome(genome):
