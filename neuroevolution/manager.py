@@ -285,9 +285,17 @@ def run_neat(resume_checkpoint: str = None):
 
     reporter = TrainingReporter(NUM_GENERATIONS, log_path, start_generation)
     checkpointer = _Checkpointer(generation_interval=5, time_interval_seconds=None, filename_prefix=checkpoint_prefix)
-    # Align the interval to the resume point so the next checkpoint lands at
-    # start_generation + 10, not at start_generation + 1.
-    checkpointer.last_generation_checkpoint = population.generation - 1
+    # Align last_generation_checkpoint so checkpoints land on exact multiples of the interval
+    # (display gen 5, 10, 15, ..., 100) regardless of resume point.
+    # Internal gen = display gen - 1. For the first desired display checkpoint after start_generation:
+    #   next_display = (start_generation // interval + 1) * interval
+    #   last = (next_display - 1) - interval
+    interval = checkpointer.generation_interval
+    if start_generation > 0:
+        next_display = (start_generation // interval + 1) * interval
+        checkpointer.last_generation_checkpoint = (next_display - 1) - interval
+    else:
+        checkpointer.last_generation_checkpoint = -1
     population.add_reporter(reporter)
     population.add_reporter(checkpointer)
 
