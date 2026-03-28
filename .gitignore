@@ -5,3 +5,4 @@
 *.pyc
 nul
 checkpoints/
+__pycache__/
