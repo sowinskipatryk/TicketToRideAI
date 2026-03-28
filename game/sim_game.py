@@ -474,7 +474,7 @@ def _advance_player(state: SimState, acted_pid: int) -> None:
         state.current_player = (state.current_player + 1) % state.num_players
     elif state.game_phase == 'last_round':
         next_pid = (state.current_player + 1) % state.num_players
-        if next_pid == state.last_player:
+        if acted_pid == state.last_player:
             state.game_phase = 'finished'
         state.current_player = next_pid
 

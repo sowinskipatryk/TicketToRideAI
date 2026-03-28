@@ -78,9 +78,9 @@ def encode_state(state: SimState, perspective: int) -> torch.Tensor:
         color = IDX_TO_COLOR[color_idx]
         features.append(state.hands[perspective].get(color, 0) / 12.0)
 
-    # Opponent hand size: 1 value
+    # Opponent hand size: 1 value (110 = total cards in USA deck, hard upper bound)
     opp_hand_total = sum(state.hands[opp].values())
-    features.append(opp_hand_total / 50.0)
+    features.append(opp_hand_total / 110.0)
 
     # Face-up cards: 9 values (count per type / 5)
     face_up_counts = [0] * NUM_COLORS

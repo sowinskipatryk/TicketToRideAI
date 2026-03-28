@@ -81,12 +81,12 @@ class AlphaZeroPlayer(BasePlayer):
         return 0
 
     def decide_train_card(self) -> int:
-        if self._card_draw_count == 0 and self._chosen_action and self._chosen_action.action_type == 2:
-            self._card_draw_count += 1
+        count = self._card_draw_count
+        self._card_draw_count += 1
+        if count == 0 and self._chosen_action and self._chosen_action.action_type == 2:
             choice = self._chosen_action.card_choice
             if 0 <= choice <= 5:
                 return choice
-        self._card_draw_count += 1
         return TrainCardDecision.DRAW_PILE.value
 
     def decide_tickets(self, min_keep: int, tickets: List[Ticket]) -> Tuple[List[int], List[int]]:

@@ -96,7 +96,7 @@ class ISMCTS:
                     break  # Expand instead of selecting
 
                 # UCB1 select among legal children
-                node = self._select_child(legal_children)
+                node = self._select_child(legal_children, node.visits)
                 apply_action(state, node.action)
                 if is_terminal(state):
                     break
@@ -132,11 +132,9 @@ class ISMCTS:
 
         return max(root.children, key=lambda c: c.visits).action
 
-    def _select_child(self, children: List[MCTSNode]) -> MCTSNode:
+    def _select_child(self, children: List[MCTSNode], parent_visits: int) -> MCTSNode:
         """UCB1 selection among children."""
-        # Find total visits for parent (sum of children visits works for normalization)
-        total_visits = sum(c.visits for c in children)
-        log_total = math.log(max(total_visits, 1))
+        log_total = math.log(max(parent_visits, 1))
 
         def ucb1(child: MCTSNode) -> float:
             if child.visits == 0:
