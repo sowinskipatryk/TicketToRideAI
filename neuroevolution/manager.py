@@ -116,7 +116,7 @@ class TrainingReporter(neat.reporting.BaseReporter):
         pass  # suppress NEAT's internal info messages
 
 
-def _calibrate(genome, config, num_games: int = 10) -> float:
+def _calibrate(genome, config, num_games: int = 20) -> float:
     """Measure absolute strength vs TicketFocused (num_games total, alternating sides).
 
     Self-play fitness deflates as all genomes improve together. This gives a
