@@ -54,7 +54,8 @@ def setup_logger(console_level: Optional[str] = None,
     """
     logger = logging.getLogger('logger')
     logger.setLevel(logging.DEBUG)
-    
+    logger.propagate = False
+
     # Clear existing handlers to avoid duplicates
     logger.handlers.clear()
     

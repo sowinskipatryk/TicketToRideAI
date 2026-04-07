@@ -4,7 +4,10 @@ import yaml
 from typing import Dict, Any
 
 
-def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
+_DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config.yaml')
+
+
+def load_config(config_path: str = None) -> Dict[str, Any]:
     """Load configuration from YAML file.
     
     Args:
@@ -17,6 +20,8 @@ def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
         FileNotFoundError: If config file doesn't exist
         yaml.YAMLError: If config file is invalid
     """
+    if config_path is None:
+        config_path = _DEFAULT_CONFIG_PATH
     if not os.path.exists(config_path):
         # Return default configuration if file doesn't exist
         return get_default_config()
